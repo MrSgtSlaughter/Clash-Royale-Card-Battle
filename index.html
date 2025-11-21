@@ -1650,6 +1650,7 @@
 
         function resolveCombat() {
             if (gameState.attackers.length === 0) {
+                gameState.currentPhase = 'main1'; // Change phase first!
                 endTurn();
                 return;
             }
@@ -1697,6 +1698,7 @@
             });
             
             gameState.attackers = [];
+            gameState.currentPhase = 'main1'; // Change phase so endTurn doesn't loop back!
             checkGameOver();
             updateUI();
             
@@ -1706,6 +1708,13 @@
         }
 
         function endTurn() {
+            // If in combat phase, resolve combat first!
+            if (gameState.currentPhase === 'combat') {
+                resolveCombat();
+                return;
+            }
+            
+            // Otherwise, end turn normally
             gameState.player.battlefield.forEach(card => card.tapped = false);
             disableButtons();
             document.getElementById('playerPanel').classList.remove('active');
