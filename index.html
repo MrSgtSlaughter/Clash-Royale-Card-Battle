@@ -853,15 +853,6 @@
     </div>
 
     <!-- Audio Elements -->
-    <!-- 
-    MUSIC FILES NEEDED (optional):
-    - Place "lobby.mp3" and "battle.mp3" in the same folder as index.html
-    - Music will auto-mute if files are missing
-    - You can download royalty-free music from:
-      * YouTube Audio Library
-      * Free Music Archive
-      * Incompetech.com
-    -->
     <audio id="lobbyMusic" loop>
         <source src="lobby.mp3" type="audio/mpeg">
     </audio>
@@ -874,65 +865,40 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
 
     <script>
-        // Wait for Firebase to load, then initialize
+        // Firebase Configuration
         let database;
         let firebaseReady = false;
 
-        // Check if Firebase is loaded
-        function initializeFirebase() {
-            try {
-                if (typeof firebase === 'undefined') {
-                    console.error('Firebase not loaded yet, retrying...');
-                    setTimeout(initializeFirebase, 100);
-                    return;
-                }
+        try {
+            const firebaseConfig = {
+                apiKey: "AIzaSyC-3Nf96W-AKn-J2gyn9krCB3n5O5iISOo",
+                authDomain: "cell-battle-game.firebaseapp.com",
+                databaseURL: "https://cell-battle-game-default-rtdb.firebaseio.com",
+                projectId: "cell-battle-game",
+                storageBucket: "cell-battle-game.firebasestorage.app",
+                messagingSenderId: "482967839438",
+                appId: "1:482967839438:web:7b291ef4b2d2bc098a269f"
+            };
 
-                // Firebase Configuration
-                const firebaseConfig = {
-                    apiKey: "AIzaSyC-3Nf96W-AKn-J2gyn9krCB3n5O5iISOo",
-                    authDomain: "cell-battle-game.firebaseapp.com",
-                    databaseURL: "https://cell-battle-game-default-rtdb.firebaseio.com",
-                    projectId: "cell-battle-game",
-                    storageBucket: "cell-battle-game.firebasestorage.app",
-                    messagingSenderId: "482967839438",
-                    appId: "1:482967839438:web:7b291ef4b2d2bc098a269f"
-                };
-
+            if (typeof firebase !== 'undefined') {
                 firebase.initializeApp(firebaseConfig);
                 database = firebase.database();
                 firebaseReady = true;
-                console.log('Firebase initialized successfully!');
-            } catch (error) {
-                console.error('Firebase initialization error:', error);
-                // Still allow game to work without multiplayer
-                firebaseReady = false;
+                console.log('✅ Firebase ready!');
+            } else {
+                console.log('ℹ️ Multiplayer offline - Single player available');
             }
-        }
-
-        // Try to initialize Firebase when scripts load
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initializeFirebase);
-        } else {
-            initializeFirebase();
+        } catch (error) {
+            console.log('ℹ️ Multiplayer offline - Single player available');
+            firebaseReady = false;
         }
 
         // Music System
-        let lobbyMusic, battleMusic;
+        let lobbyMusic = document.getElementById('lobbyMusic');
+        let battleMusic = document.getElementById('battleMusic');
         let currentMusic = 'lobby';
         let musicMuted = false;
         let gameStarted = false;
-
-        // Initialize audio elements when DOM is ready
-        function initAudio() {
-            lobbyMusic = document.getElementById('lobbyMusic');
-            battleMusic = document.getElementById('battleMusic');
-        }
-
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initAudio);
-        } else {
-            initAudio();
-        }
 
         function startGame() {
             // Hide overlay
@@ -942,10 +908,8 @@
             // Start lobby music
             playLobbyMusic();
             
-            // Load leaderboard (only if Firebase is ready)
-            if (firebaseReady) {
-                loadLeaderboard();
-            }
+            // Load leaderboard
+            loadLeaderboard();
         }
 
         function playLobbyMusic() {
@@ -1104,16 +1068,16 @@
             { name: "Mega Knight", cost: 7, power: 6, toughness: 6, type: "creature", image: "Mega Knight.png" },
             
             // SPELLS
-            { name: "Zap", cost: 2, type: "instant", image: "spells/zap.png", effect: "Deal 2 damage, tap creature" },
-            { name: "Giant Snowball", cost: 2, type: "instant", image: "spells/Giant Snowball.png", effect: "Deal 2 damage to 2 targets" },
-            { name: "Arrows", cost: 3, type: "instant", image: "spells/Arrows.png", effect: "Destroy weak creatures" },
-            { name: "Heal", cost: 3, type: "instant", image: "spells/Heal.png", effect: "Heal creature +3" },
-            { name: "Earthquake", cost: 3, type: "sorcery", image: "spells/Earthquake.png", effect: "Deal 3 to all" },
-            { name: "Freeze", cost: 4, type: "instant", image: "spells/Freeze.png", effect: "Tap all opponent creatures" },
-            { name: "Fireball", cost: 4, type: "instant", image: "spells/Fireball.png", effect: "Deal 4 damage" },
-            { name: "Poison", cost: 4, type: "sorcery", image: "spells/Poison.png", effect: "Deal 2 to all opponents" },
-            { name: "Lightning", cost: 6, type: "instant", image: "spells/Lightning.png", effect: "Deal 5 to 3 targets" },
-            { name: "Rocket", cost: 6, type: "instant", image: "spells/Rocket.png", effect: "Deal 7 damage" }
+            { name: "Zap", cost: 2, type: "instant", image: "zap.png", effect: "Deal 2 damage, tap creature" },
+            { name: "Giant Snowball", cost: 2, type: "instant", image: "Giant Snowball.png", effect: "Deal 2 damage to 2 targets" },
+            { name: "Arrows", cost: 3, type: "instant", image: "Arrows.png", effect: "Destroy weak creatures" },
+            { name: "Heal", cost: 3, type: "instant", image: "Heal.png", effect: "Heal creature +3" },
+            { name: "Earthquake", cost: 3, type: "sorcery", image: "Earthquake.png", effect: "Deal 3 to all" },
+            { name: "Freeze", cost: 4, type: "instant", image: "Freeze.png", effect: "Tap all opponent creatures" },
+            { name: "Fireball", cost: 4, type: "instant", image: "Fireball.png", effect: "Deal 4 damage" },
+            { name: "Poison", cost: 4, type: "sorcery", image: "Poison.png", effect: "Deal 2 to all opponents" },
+            { name: "Lightning", cost: 6, type: "instant", image: "Lightning.png", effect: "Deal 5 to 3 targets" },
+            { name: "Rocket", cost: 6, type: "instant", image: "Rocket.png", effect: "Deal 7 damage" }
         ];
 
         // Game State
@@ -1134,15 +1098,7 @@
 
         // Leaderboard Functions
         function loadLeaderboard() {
-            if (!firebaseReady || !database) {
-                console.log('Firebase not ready, skipping leaderboard');
-                const leaderboardDiv = document.getElementById('leaderboardList');
-                if (leaderboardDiv) {
-                    leaderboardDiv.innerHTML = '<div style="text-align: center; padding: 20px; color: #a8dadc;">Multiplayer features offline</div>';
-                }
-                return;
-            }
-            
+            if (!firebaseReady) return;
             const leaderboardRef = database.ref('leaderboard');
             leaderboardRef.orderByChild('wins').limitToLast(10).once('value', (snapshot) => {
                 const leaderboardDiv = document.getElementById('leaderboardList');
@@ -1170,21 +1126,11 @@
                 if (entries.length === 0) {
                     leaderboardDiv.innerHTML = '<div style="text-align: center; padding: 20px; color: #a8dadc;">No players yet. Be the first!</div>';
                 }
-            }).catch(error => {
-                console.error('Leaderboard error:', error);
-                const leaderboardDiv = document.getElementById('leaderboardList');
-                if (leaderboardDiv) {
-                    leaderboardDiv.innerHTML = '<div style="text-align: center; padding: 20px; color: #ff6b6b;">Error loading leaderboard</div>';
-                }
             });
         }
 
         function updateLeaderboard(playerId, playerName, won) {
-            if (!firebaseReady || !database) {
-                console.log('Firebase not ready, skipping leaderboard update');
-                return;
-            }
-            
+            if (!firebaseReady) return;
             const playerRef = database.ref('leaderboard/' + playerId);
             playerRef.transaction((current) => {
                 if (current === null) {
@@ -1203,13 +1149,15 @@
                 return current;
             }).then(() => {
                 loadLeaderboard();
-            }).catch(error => {
-                console.error('Error updating leaderboard:', error);
             });
         }
 
         // UI Functions
         function showMultiplayer() {
+            if (!firebaseReady) {
+                alert('Multiplayer is offline. Try Single Player!');
+                return;
+            }
             document.getElementById('roomSetup').classList.add('show');
         }
 
@@ -1224,8 +1172,8 @@
         }
 
         function createOrJoinRoom() {
-            if (!firebaseReady || !database) {
-                alert('Multiplayer features are currently offline. Please try single player mode.');
+            if (!firebaseReady) {
+                alert('Multiplayer is offline!');
                 return;
             }
             
@@ -1805,8 +1753,8 @@
             }
             
             let cardContent = `<div class="cost-badge">${card.cost}</div>`;
-            // URL-encode the image path to handle spaces in filenames like "Fire Spirit.png"
-            const encodedImagePath = encodeURI(`Clash Assets/${card.image}`);
+            // URL encode to handle spaces in filenames
+            const encodedImagePath = encodeURI(card.image);
             cardContent += `<img src="${encodedImagePath}" alt="${card.name}" class="card-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'100\\' height=\\'100\\'%3E%3Crect fill=\\'%23333\\' width=\\'100\\' height=\\'100\\'/%3E%3Ctext x=\\'50%25\\' y=\\'50%25\\' text-anchor=\\'middle\\' dy=\\'.3em\\' fill=\\'white\\'%3E${card.name}%3C/text%3E%3C/svg%3E'">`;
             cardContent += `<div class="card-name">${card.name}</div>`;
             
