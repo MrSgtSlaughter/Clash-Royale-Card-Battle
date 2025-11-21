@@ -1486,35 +1486,137 @@
             
             switch(spell.name) {
                 case 'Zap':
+                    // Deal 2 damage and tap a creature
                     if (gameState[opponent].battlefield.length > 0) {
                         const target = gameState[opponent].battlefield[0];
                         target.currentToughness -= 2;
                         target.tapped = true;
+                        showMessage(`⚡ Zap deals 2 damage to ${target.name} and taps it!`);
                         if (target.currentToughness <= 0) {
                             gameState[opponent].battlefield = gameState[opponent].battlefield.filter(c => c.id !== target.id);
+                            showMessage(`💀 ${target.name} destroyed!`);
                         }
                     }
                     break;
+                    
+                case 'Giant Snowball':
+                    // Deal 2 damage to 2 targets
+                    for (let i = 0; i < 2 && i < gameState[opponent].battlefield.length; i++) {
+                        const target = gameState[opponent].battlefield[i];
+                        target.currentToughness -= 2;
+                        showMessage(`❄️ Giant Snowball deals 2 damage to ${target.name}!`);
+                        if (target.currentToughness <= 0) {
+                            gameState[opponent].battlefield = gameState[opponent].battlefield.filter(c => c.id !== target.id);
+                            showMessage(`💀 ${target.name} destroyed!`);
+                        }
+                    }
+                    break;
+                    
+                case 'Arrows':
+                    // Destroy all creatures with 2 or less toughness
+                    const destroyed = [];
+                    gameState[opponent].battlefield = gameState[opponent].battlefield.filter(c => {
+                        if (c.type === 'creature' && c.currentToughness <= 2) {
+                            destroyed.push(c.name);
+                            return false;
+                        }
+                        return true;
+                    });
+                    if (destroyed.length > 0) {
+                        showMessage(`🏹 Arrows destroyed: ${destroyed.join(', ')}!`);
+                    } else {
+                        showMessage(`🏹 Arrows had no effect!`);
+                    }
+                    break;
+                    
+                case 'Heal':
+                    // Heal a creature +3
+                    if (gameState[caster].battlefield.length > 0) {
+                        const target = gameState[caster].battlefield[0];
+                        const oldToughness = target.currentToughness;
+                        target.currentToughness = Math.min(target.currentToughness + 3, target.toughness);
+                        const healed = target.currentToughness - oldToughness;
+                        showMessage(`💚 Heal restored ${healed} health to ${target.name}!`);
+                    }
+                    break;
+                    
+                case 'Earthquake':
+                    // Deal 3 damage to all creatures
+                    gameState[opponent].battlefield.forEach(c => {
+                        c.currentToughness -= 3;
+                    });
+                    gameState[opponent].battlefield = gameState[opponent].battlefield.filter(c => c.currentToughness > 0);
+                    gameState[caster].battlefield.forEach(c => {
+                        c.currentToughness -= 3;
+                    });
+                    gameState[caster].battlefield = gameState[caster].battlefield.filter(c => c.currentToughness > 0);
+                    showMessage(`🌍 Earthquake deals 3 damage to all creatures!`);
+                    break;
+                    
+                case 'Freeze':
+                    // Tap all opponent creatures
+                    gameState[opponent].battlefield.forEach(c => {
+                        if (c.type === 'creature') c.tapped = true;
+                    });
+                    showMessage(`❄️ Freeze taps all opponent creatures!`);
+                    break;
+                    
                 case 'Fireball':
+                    // Deal 4 damage to creature or player
                     if (gameState[opponent].battlefield.length > 0) {
                         const target = gameState[opponent].battlefield[0];
                         target.currentToughness -= 4;
+                        showMessage(`🔥 Fireball deals 4 damage to ${target.name}!`);
                         if (target.currentToughness <= 0) {
                             gameState[opponent].battlefield = gameState[opponent].battlefield.filter(c => c.id !== target.id);
+                            showMessage(`💀 ${target.name} destroyed!`);
                         }
                     } else {
                         gameState[opponent].life -= 4;
+                        showMessage(`🔥 Fireball deals 4 damage to opponent! (${gameState[opponent].life} life remaining)`);
                     }
                     break;
-                case 'Freeze':
-                    gameState[opponent].battlefield.forEach(c => c.tapped = true);
+                    
+                case 'Poison':
+                    // Deal 2 damage to all opponent creatures
+                    gameState[opponent].battlefield.forEach(c => {
+                        c.currentToughness -= 2;
+                    });
+                    gameState[opponent].battlefield = gameState[opponent].battlefield.filter(c => c.currentToughness > 0);
+                    showMessage(`☠️ Poison deals 2 damage to all opponent creatures!`);
                     break;
-                case 'Heal':
-                    if (gameState[caster].battlefield.length > 0) {
-                        const target = gameState[caster].battlefield[0];
-                        target.currentToughness = Math.min(target.currentToughness + 3, target.toughness);
+                    
+                case 'Lightning':
+                    // Deal 5 damage to up to 3 targets
+                    for (let i = 0; i < 3 && i < gameState[opponent].battlefield.length; i++) {
+                        const target = gameState[opponent].battlefield[i];
+                        target.currentToughness -= 5;
+                        showMessage(`⚡ Lightning deals 5 damage to ${target.name}!`);
+                        if (target.currentToughness <= 0) {
+                            gameState[opponent].battlefield = gameState[opponent].battlefield.filter(c => c.id !== target.id);
+                            showMessage(`💀 ${target.name} destroyed!`);
+                        }
                     }
                     break;
+                    
+                case 'Rocket':
+                    // Deal 7 damage to creature or player
+                    if (gameState[opponent].battlefield.length > 0) {
+                        const target = gameState[opponent].battlefield[0];
+                        target.currentToughness -= 7;
+                        showMessage(`🚀 Rocket deals 7 damage to ${target.name}!`);
+                        if (target.currentToughness <= 0) {
+                            gameState[opponent].battlefield = gameState[opponent].battlefield.filter(c => c.id !== target.id);
+                            showMessage(`💀 ${target.name} destroyed!`);
+                        }
+                    } else {
+                        gameState[opponent].life -= 7;
+                        showMessage(`🚀 Rocket deals 7 damage to opponent! (${gameState[opponent].life} life remaining)`);
+                    }
+                    break;
+                    
+                default:
+                    showMessage(`✨ ${spell.name} - Effect coming soon!`);
             }
             
             checkGameOver();
@@ -1554,16 +1656,27 @@
             
             triggerAttackEffect();
             
-            const blockers = [];
+            // Get all available blockers
             const availableBlockers = gameState.opponent.battlefield.filter(c => !c.tapped && c.type === 'creature');
+            let blockerIndex = 0;
             
-            gameState.attackers.forEach((attackerId, index) => {
+            // Process each attacker
+            gameState.attackers.forEach((attackerId) => {
                 const attacker = gameState.player.battlefield.find(c => c.id === attackerId);
-                if (availableBlockers[index]) {
-                    const blocker = availableBlockers[index];
+                if (!attacker) return; // Attacker died somehow
+                
+                // Check if there's a blocker available
+                if (blockerIndex < availableBlockers.length) {
+                    const blocker = availableBlockers[blockerIndex];
+                    blockerIndex++;
+                    
+                    // Combat damage
                     attacker.currentToughness -= blocker.power;
                     blocker.currentToughness -= attacker.power;
                     
+                    showMessage(`💥 ${attacker.name} (${attacker.power}/${attacker.currentToughness}) fights ${blocker.name} (${blocker.power}/${blocker.currentToughness})!`);
+                    
+                    // Remove dead creatures
                     if (attacker.currentToughness <= 0) {
                         gameState.player.battlefield = gameState.player.battlefield.filter(c => c.id !== attacker.id);
                     }
@@ -1571,10 +1684,13 @@
                         gameState.opponent.battlefield = gameState.opponent.battlefield.filter(c => c.id !== blocker.id);
                     }
                 } else {
+                    // Unblocked - damage goes to opponent!
                     gameState.opponent.life -= attacker.power;
+                    showMessage(`⚔️ ${attacker.name} deals ${attacker.power} damage to opponent! (${gameState.opponent.life} life remaining)`);
                 }
             });
             
+            // Tap all attackers
             gameState.attackers.forEach(attackerId => {
                 const card = gameState.player.battlefield.find(c => c.id === attackerId);
                 if (card) card.tapped = true;
@@ -1631,29 +1747,42 @@
         function aiAttack() {
             triggerAttackEffect();
             
-            gameState.opponent.battlefield.forEach(card => {
-                if (!card.tapped && card.type === 'creature') {
-                    const availableBlockers = gameState.player.battlefield.filter(c => !c.tapped && c.type === 'creature');
+            // Get all available blockers for player
+            const availableBlockers = gameState.player.battlefield.filter(c => !c.tapped && c.type === 'creature');
+            let blockerIndex = 0;
+            
+            // AI attacks with all untapped creatures
+            const attackers = gameState.opponent.battlefield.filter(card => !card.tapped && card.type === 'creature');
+            
+            attackers.forEach(attacker => {
+                // Check if there's a blocker available
+                if (blockerIndex < availableBlockers.length) {
+                    const blocker = availableBlockers[blockerIndex];
+                    blockerIndex++;
                     
-                    if (availableBlockers.length > 0) {
-                        const blocker = availableBlockers[0];
-                        card.currentToughness -= blocker.power;
-                        blocker.currentToughness -= card.power;
-                        blocker.tapped = true;
-                        
-                        if (card.currentToughness <= 0) {
-                            gameState.opponent.battlefield = gameState.opponent.battlefield.filter(c => c.id !== card.id);
-                        }
-                        if (blocker.currentToughness <= 0) {
-                            gameState.player.battlefield = gameState.player.battlefield.filter(c => c.id !== blocker.id);
-                        }
-                    } else {
-                        gameState.player.life -= card.power;
+                    // Combat damage
+                    attacker.currentToughness -= blocker.power;
+                    blocker.currentToughness -= attacker.power;
+                    blocker.tapped = true;
+                    
+                    showMessage(`💥 ${attacker.name} (${attacker.power}/${attacker.currentToughness}) fights ${blocker.name} (${blocker.power}/${blocker.currentToughness})!`);
+                    
+                    // Remove dead creatures
+                    if (attacker.currentToughness <= 0) {
+                        gameState.opponent.battlefield = gameState.opponent.battlefield.filter(c => c.id !== attacker.id);
                     }
-                    card.tapped = true;
+                    if (blocker.currentToughness <= 0) {
+                        gameState.player.battlefield = gameState.player.battlefield.filter(c => c.id !== blocker.id);
+                    }
+                } else {
+                    // Unblocked - damage goes to player!
+                    gameState.player.life -= attacker.power;
+                    showMessage(`⚔️ ${attacker.name} deals ${attacker.power} damage to you! (${gameState.player.life} life remaining)`);
                 }
+                attacker.tapped = true;
             });
             
+            // Untap opponent's creatures at end of their turn
             gameState.opponent.battlefield.forEach(card => card.tapped = false);
             
             checkGameOver();
