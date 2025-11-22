@@ -1,1910 +1,1291 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>⚔️ CLASH ROYALE QUIZ BATTLE - MULTIPLAYER ⚔️</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght:400;700;900&family=Roboto:wght@400;700&display=swap');
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Roboto', sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-            color: #fff;
-            overflow-x: hidden;
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        /* Click to Start Overlay */
-        .start-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.95);
-            z-index: 10000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-        }
-
-        .start-overlay.hidden {
-            display: none;
-        }
-
-        .start-btn {
-            padding: 30px 60px;
-            font-size: 2em;
-            background: linear-gradient(135deg, #FFD700, #FFA500);
-            border: 5px solid #fff;
-            border-radius: 20px;
-            color: #000;
-            font-weight: bold;
-            cursor: pointer;
-            font-family: 'Cinzel', serif;
-            text-transform: uppercase;
-            box-shadow: 0 20px 60px rgba(255, 215, 0, 0.5);
-            animation: pulse-glow 2s ease-in-out infinite;
-        }
-
-        @keyframes pulse-glow {
-            0%, 100% { transform: scale(1); box-shadow: 0 20px 60px rgba(255, 215, 0, 0.5); }
-            50% { transform: scale(1.05); box-shadow: 0 20px 80px rgba(255, 215, 0, 0.8); }
-        }
-
-        .start-btn:hover {
-            transform: scale(1.1);
-        }
-
-        .start-message {
-            font-size: 1.5em;
-            margin-bottom: 30px;
-            font-family: 'Cinzel', serif;
-            color: #FFD700;
-        }
-
-        /* LOBBY SCREEN */
-        .lobby-screen {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: block;
-        }
-
-        .lobby-screen.hidden {
-            display: none;
-        }
-
-        .lobby-header {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-
-        .lobby-header h1 {
-            font-family: 'Cinzel', serif;
-            font-size: 4em;
-            font-weight: 900;
-            background: linear-gradient(45deg, #FFD700, #FFA500, #FFD700);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
-            animation: glow-pulse 2s ease-in-out infinite;
-        }
-
-        @keyframes glow-pulse {
-            0%, 100% { filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.8)); }
-            50% { filter: drop-shadow(0 0 40px rgba(255, 215, 0, 1)); }
-        }
-
-        .music-controls {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 10000;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 15px;
-            border-radius: 10px;
-            border: 2px solid #FFD700;
-        }
-
-        .music-controls button {
-            background: linear-gradient(135deg, #4a90e2, #2d5f9e);
-            border: none;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1.1em;
-            margin: 5px;
-        }
-
-        .music-controls button:hover {
-            transform: scale(1.05);
-        }
-
-        .lobby-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin-bottom: 40px;
-        }
-
-        .mode-selection, .leaderboard-section {
-            background: linear-gradient(135deg, rgba(26, 26, 46, 0.95), rgba(22, 33, 62, 0.95));
-            padding: 30px;
-            border-radius: 20px;
-            border: 3px solid #FFD700;
-            box-shadow: 0 15px 50px rgba(255, 215, 0, 0.3);
-        }
-
-        .mode-selection h2, .leaderboard-section h2 {
-            font-family: 'Cinzel', serif;
-            font-size: 2em;
-            margin-bottom: 20px;
-            text-align: center;
-            color: #FFD700;
-        }
-
-        .mode-btn {
-            width: 100%;
-            padding: 20px;
-            margin: 10px 0;
-            font-size: 1.3em;
-            border: none;
-            border-radius: 15px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s ease;
-            font-family: 'Cinzel', serif;
-            text-transform: uppercase;
-        }
-
-        .mode-btn.single {
-            background: linear-gradient(135deg, #00b894, #00cec9);
-            color: white;
-        }
-
-        .mode-btn.multi {
-            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
-            color: white;
-        }
-
-        .mode-btn:hover {
-            transform: translateY(-5px) scale(1.05);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-        }
-
-        .room-setup {
-            display: none;
-            margin-top: 20px;
-        }
-
-        .room-setup.show {
-            display: block;
-        }
-
-        .room-input {
-            width: 100%;
-            padding: 15px;
-            margin: 10px 0;
-            font-size: 1.1em;
-            border: 2px solid #FFD700;
-            border-radius: 10px;
-            background: rgba(0, 0, 0, 0.5);
-            color: white;
-        }
-
-        .leaderboard-list {
-            max-height: 500px;
-            overflow-y: auto;
-        }
-
-        .leaderboard-entry {
-            display: flex;
-            justify-content: space-between;
-            padding: 15px;
-            margin: 10px 0;
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 10px;
-            border-left: 4px solid #FFD700;
-        }
-
-        .leaderboard-entry.top3 {
-            border-left-width: 6px;
-            background: linear-gradient(90deg, rgba(255, 215, 0, 0.2), rgba(0, 0, 0, 0.5));
-        }
-
-        /* GAME SCREEN */
-        .game-screen {
-            display: none;
-        }
-
-        .game-screen.show {
-            display: block;
-        }
-
-        .game-container {
-            max-width: 1600px;
-            margin: 0 auto;
-        }
-
-        .game-header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .game-header h1 {
-            font-family: 'Cinzel', serif;
-            font-size: 3.5em;
-            font-weight: 900;
-            background: linear-gradient(45deg, #FFD700, #FFA500, #FFD700);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        /* Quiz Modal */
-        .quiz-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.95);
-            z-index: 3000;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            animation: fade-in 0.3s ease;
-        }
-
-        .quiz-modal.show {
-            display: flex;
-        }
-
-        .quiz-content {
-            background: linear-gradient(135deg, #2d3436, #000);
-            border: 5px solid #FFD700;
-            border-radius: 25px;
-            padding: 40px;
-            max-width: 800px;
-            width: 90%;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
-            animation: quiz-entrance 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-        }
-
-        @keyframes quiz-entrance {
-            from { transform: scale(0) rotate(-180deg); opacity: 0; }
-            to { transform: scale(1) rotate(0); opacity: 1; }
-        }
-
-        .quiz-question {
-            font-family: 'Cinzel', serif;
-            font-size: 1.8em;
-            margin-bottom: 30px;
-            text-align: center;
-            color: #FFD700;
-        }
-
-        .quiz-answers {
-            display: grid;
-            gap: 15px;
-        }
-
-        .answer-btn {
-            padding: 20px;
-            font-size: 1.2em;
-            background: linear-gradient(135deg, #4a90e2, #2d5f9e);
-            border: 3px solid #fff;
-            border-radius: 15px;
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: bold;
-        }
-
-        .answer-btn:hover {
-            transform: translateY(-5px) scale(1.05);
-            box-shadow: 0 10px 30px rgba(74, 144, 226, 0.6);
-        }
-
-        .answer-btn.correct {
-            background: linear-gradient(135deg, #00b894, #00cec9);
-            animation: correct-flash 0.6s ease;
-        }
-
-        .answer-btn.incorrect {
-            background: linear-gradient(135deg, #d63031, #e74c3c);
-            animation: shake 0.6s ease;
-        }
-
-        @keyframes correct-flash {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); box-shadow: 0 0 50px rgba(0, 255, 0, 0.8); }
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-10px); }
-            75% { transform: translateX(10px); }
-        }
-
-        .quiz-result {
-            text-align: center;
-            font-size: 2em;
-            margin-top: 20px;
-            font-family: 'Cinzel', serif;
-        }
-
-        /* Message Box */
-        .message-box {
-            background: linear-gradient(135deg, rgba(26, 26, 46, 0.9), rgba(22, 33, 62, 0.9));
-            padding: 20px;
-            border-radius: 15px;
-            text-align: center;
-            font-size: 1.4em;
-            margin-bottom: 30px;
-            border: 3px solid #FFD700;
-            box-shadow: 0 10px 40px rgba(255, 215, 0, 0.3);
-            min-height: 70px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-        }
-
-        /* Game Info */
-        .game-info {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 30px;
-            gap: 20px;
-        }
-
-        .player-panel {
-            flex: 1;
-            background: linear-gradient(135deg, rgba(26, 26, 46, 0.95), rgba(22, 33, 62, 0.95));
-            padding: 25px;
-            border-radius: 20px;
-            border: 3px solid #4a90e2;
-            box-shadow: 0 10px 40px rgba(74, 144, 226, 0.4);
-        }
-
-        .player-panel.opponent {
-            border-color: #e74c3c;
-            box-shadow: 0 10px 40px rgba(231, 76, 60, 0.4);
-        }
-
-        .player-panel.active {
-            border-color: #00ff00;
-            box-shadow: 0 10px 40px rgba(0, 255, 0, 0.6);
-            animation: active-pulse 1s ease-in-out infinite;
-        }
-
-        @keyframes active-pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.02); }
-        }
-
-        .player-panel h2 {
-            font-family: 'Cinzel', serif;
-            font-size: 2em;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-
-        .stats {
-            display: flex;
-            justify-content: space-around;
-            gap: 15px;
-        }
-
-        .stat {
-            background: rgba(0, 0, 0, 0.5);
-            padding: 15px 20px;
-            border-radius: 10px;
-            text-align: center;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            flex: 1;
-        }
-
-        .stat-value {
-            font-size: 2em;
-            font-weight: bold;
-            display: block;
-            margin-top: 5px;
-        }
-
-        .life .stat-value { color: #ff6b6b; }
-        .elixir .stat-value { color: #a29bfe; }
-
-        /* Battlefield */
-        .battlefield {
-            background: linear-gradient(135deg, rgba(15, 52, 96, 0.8), rgba(22, 33, 62, 0.8));
-            border: 4px solid;
-            border-radius: 20px;
-            padding: 30px;
-            margin-bottom: 25px;
-            min-height: 280px;
-            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.5);
-        }
-
-        .battlefield.opponent {
-            border-color: #e74c3c;
-        }
-
-        .battlefield.player {
-            border-color: #4a90e2;
-        }
-
-        .battlefield h3 {
-            text-align: center;
-            margin-bottom: 20px;
-            font-family: 'Cinzel', serif;
-            font-size: 1.8em;
-            text-transform: uppercase;
-        }
-
-        .cards-in-play {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            justify-content: center;
-            min-height: 180px;
-        }
-
-        /* Card Styling */
-        .card {
-            width: 160px;
-            height: 240px;
-            background: linear-gradient(135deg, #2d3436 0%, #000 100%);
-            border-radius: 15px;
-            padding: 12px;
-            cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            position: relative;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            border: 3px solid #FFD700;
-            animation: card-enter 0.6s ease-out;
-        }
-
-        @keyframes card-enter {
-            from { transform: scale(0) rotateY(180deg); opacity: 0; }
-            to { transform: scale(1) rotateY(0); opacity: 1; }
-        }
-
-        .card:hover {
-            transform: translateY(-20px) scale(1.08);
-            box-shadow: 0 20px 50px rgba(255, 215, 0, 0.6);
-            z-index: 100;
-        }
-
-        .card.spell {
-            border-color: #9b59b6;
-        }
-
-        .card.selected {
-            transform: translateY(-15px) scale(1.1);
-            box-shadow: 0 0 50px rgba(0, 255, 0, 0.8);
-            border-color: #00ff00;
-        }
-
-        .card.tapped {
-            opacity: 0.6;
-            transform: rotate(90deg);
-        }
-
-        .cost-badge {
-            position: absolute;
-            top: -12px;
-            left: -12px;
-            width: 45px;
-            height: 45px;
-            background: linear-gradient(135deg, #a29bfe 0%, #6c5ce7 100%);
-            color: #fff;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 1.4em;
-            border: 3px solid #fff;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
-            z-index: 10;
-        }
-
-        .card-image {
-            width: 100%;
-            height: 120px;
-            object-fit: contain;
-            margin-bottom: 8px;
-            border-radius: 10px;
-            filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.5));
-        }
-
-        .card-name {
-            font-size: 1em;
-            text-align: center;
-            margin-bottom: 8px;
-            font-weight: bold;
-            font-family: 'Cinzel', serif;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .card-stats {
-            display: flex;
-            justify-content: space-around;
-            font-size: 1.1em;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 8px;
-            border-radius: 8px;
-            font-weight: bold;
-        }
-
-        .card-type {
-            font-size: 0.8em;
-            text-align: center;
-            color: #a29bfe;
-            margin-bottom: 5px;
-            font-style: italic;
-        }
-
-        /* Hand */
-        .hand {
-            background: linear-gradient(135deg, rgba(26, 26, 46, 0.95), rgba(22, 33, 62, 0.95));
-            border: 4px solid #FFD700;
-            border-radius: 20px;
-            padding: 25px;
-            margin-bottom: 30px;
-            box-shadow: 0 15px 50px rgba(255, 215, 0, 0.3);
-        }
-
-        .hand h3 {
-            text-align: center;
-            margin-bottom: 20px;
-            font-family: 'Cinzel', serif;
-            font-size: 1.8em;
-        }
-
-        .hand-cards {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        /* Controls */
-        .controls {
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .btn {
-            padding: 18px 40px;
-            font-size: 1.2em;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            font-family: 'Cinzel', serif;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-        }
-
-        .btn:hover {
-            transform: translateY(-5px) scale(1.05);
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #00b894, #00cec9);
-            color: white;
-        }
-
-        .btn-secondary {
-            background: linear-gradient(135deg, #fdcb6e, #e17055);
-            color: #2d3436;
-        }
-
-        .btn-danger {
-            background: linear-gradient(135deg, #d63031, #e74c3c);
-            color: white;
-        }
-
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        /* Attack Effects */
-        @keyframes screen-shake {
-            0%, 100% { transform: translate(0, 0); }
-            10% { transform: translate(-10px, -10px); }
-            20% { transform: translate(10px, 10px); }
-            30% { transform: translate(-10px, 10px); }
-            40% { transform: translate(10px, -10px); }
-            50% { transform: translate(-10px, -10px); }
-            60% { transform: translate(10px, 10px); }
-            70% { transform: translate(-10px, 10px); }
-            80% { transform: translate(10px, -10px); }
-            90% { transform: translate(-10px, 0); }
-        }
-
-        .screen-shake {
-            animation: screen-shake 0.5s ease-in-out;
-        }
-
-        .attack-flash {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 0, 0, 0);
-            pointer-events: none;
-            z-index: 9999;
-            animation: attack-pulse 0.6s ease-in-out;
-        }
-
-        @keyframes attack-pulse {
-            0% { background: rgba(255, 0, 0, 0); }
-            25% { background: rgba(255, 0, 0, 0.4); }
-            50% { background: rgba(255, 0, 0, 0.6); }
-            75% { background: rgba(255, 0, 0, 0.4); }
-            100% { background: rgba(255, 0, 0, 0); }
-        }
-
-        /* Game Over */
-        .game-over {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: linear-gradient(135deg, rgba(0, 0, 0, 0.98), rgba(26, 26, 46, 0.98));
-            padding: 60px;
-            border-radius: 30px;
-            border: 6px solid #FFD700;
-            text-align: center;
-            z-index: 3000;
-            display: none;
-            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.9);
-        }
-
-        .game-over.show {
-            display: block;
-        }
-
-        .game-over h2 {
-            font-family: 'Cinzel', serif;
-            font-size: 4em;
-            margin-bottom: 30px;
-            background: linear-gradient(45deg, #FFD700, #FFA500);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        @media (max-width: 768px) {
-            .lobby-content { grid-template-columns: 1fr; }
-            .game-header h1 { font-size: 2.5em; }
-            .card { width: 120px; height: 180px; }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Clash Royale Quiz Tower Defense - Egypt Edition</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Roboto:wght@400;700&display=swap');
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      background: #020617;
+      font-family: 'Roboto', sans-serif;
+      color: #ecf0f1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .game-container {
+      width: 100%;
+      max-width: 1100px;
+      background: radial-gradient(circle at top, #1e293b 0, #020617 70%);
+      border-radius: 18px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+      padding: 16px 18px 20px 18px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .title-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .title {
+      font-family: 'Cinzel', serif;
+      font-size: 1.4rem;
+      text-shadow: 0 0 10px rgba(255,255,255,0.3);
+    }
+
+    .controls {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 999px;
+      padding: 6px 16px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #ffd200, #ff8c00);
+      color: #2c3e50;
+      box-shadow: 0 4px 18px rgba(255,215,0,0.4);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 22px rgba(255,215,0,0.6);
+    }
+
+    .btn-secondary {
+      background: #34495e;
+      color: #ecf0f1;
+    }
+
+    .btn-secondary:hover {
+      background: #3f5873;
+    }
+
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0,1fr));
+      gap: 8px;
+      margin-bottom: 10px;
+      font-size: 0.9rem;
+    }
+
+    .stat-tile {
+      background: rgba(0,0,0,0.35);
+      border-radius: 10px;
+      padding: 6px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .stat-label {
+      font-size: 0.7rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #95a5a6;
+    }
+
+    .stat-value {
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .hp-bar-outer {
+      width: 100%;
+      height: 8px;
+      border-radius: 999px;
+      background: #2c3e50;
+      overflow: hidden;
+    }
+
+    .hp-bar-inner {
+      height: 100%;
+      width: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #27ae60, #2ecc71);
+      transition: width 0.2s ease;
+    }
+
+    .elixir-value {
+      font-weight: 700;
+      color: #ffd200;
+    }
+
+    /* Battlefield / lane */
+
+    .battlefield {
+      position: relative;
+      border-radius: 18px;
+      margin-bottom: 10px;
+      padding: 16px 16px 18px 16px;
+      overflow: hidden;
+      box-shadow: inset 0 0 18px rgba(0,0,0,0.8);
+      background-image: url("background.png");
+      background-size: cover;
+      background-position: center;
+    }
+
+    .battlefield::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom,
+        rgba(0,0,0,0.3) 0%,
+        rgba(0,0,0,0.1) 40%,
+        rgba(0,0,0,0.5) 100%);
+      pointer-events: none;
+    }
+
+    .tower-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 160px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .tower {
+      position: relative;
+      width: 90px;
+      height: 90px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .tower-img {
+      width: 90px;
+      height: auto;
+      display: block;
+      filter: drop-shadow(0 10px 18px rgba(0,0,0,0.9));
+    }
+
+    .tower-info {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+      font-size: 0.7rem;
+      text-shadow: 0 0 6px rgba(0,0,0,0.85);
+      pointer-events: none;
+    }
+
+    .tower-info.enemy {
+      top: -4px;
+    }
+
+    .tower-info.player {
+      bottom: -4px;
+    }
+
+    .tower-name {
+      font-family: 'Cinzel', serif;
+      font-size: 0.72rem;
+    }
+
+    .tower-hp {
+      margin-top: 2px;
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+
+    .lane {
+      position: relative;
+      border-left: 2px dashed rgba(255,255,255,0.15);
+      border-right: 2px dashed rgba(0,0,0,0.4);
+      margin: 32px auto;
+      height: 260px;
+      width: 58%;
+      z-index: 1;
+    }
+
+    .unit {
+      position: absolute;
+      width: 58px;
+      height: 74px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.9);
+      border: 2px solid rgba(255,255,255,0.15);
+      background: #111827;
+    }
+
+    .unit img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .unit-hp-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 5px;
+      background: rgba(0,0,0,0.6);
+    }
+
+    .unit-hp-inner {
+      height: 100%;
+      background: linear-gradient(90deg, #2ecc71, #27ae60);
+    }
+
+    .unit.player-unit {
+      box-shadow: 0 0 16px rgba(46,204,113,0.9);
+    }
+
+    .unit.enemy-unit {
+      box-shadow: 0 0 16px rgba(231,76,60,0.9);
+    }
+
+    /* Hands */
+
+    .hand-section {
+      margin-top: 8px;
+    }
+
+    .hand-title {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #95a5a6;
+      margin-bottom: 4px;
+    }
+
+    .card-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .card {
+      min-width: 84px;
+      max-width: 84px;
+      background: radial-gradient(circle at top, #ffffff33 0, #34495e 40%, #111827 100%);
+      border-radius: 14px;
+      padding: 4px;
+      position: relative;
+      cursor: pointer;
+      transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+    }
+
+    .card.disabled {
+      cursor: not-allowed;
+      filter: grayscale(0.6) brightness(0.6);
+      opacity: 0.6;
+    }
+
+    .card:hover:not(.disabled) {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 18px rgba(0,0,0,0.8);
+    }
+
+    .card img {
+      width: 100%;
+      border-radius: 10px;
+      display: block;
+    }
+
+    .card-name {
+      font-size: 0.72rem;
+      margin-top: 2px;
+      text-align: center;
+    }
+
+    .card-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 2px;
+      font-size: 0.7rem;
+    }
+
+    .elixir-badge {
+      background: radial-gradient(circle at 30% 10%, #fff 0, #9b59b6 40%, #8e44ad 100%);
+      color: #fff;
+      border-radius: 999px;
+      padding: 1px 7px;
+      font-size: 0.7rem;
+      font-weight: 700;
+    }
+
+    .damage-badge {
+      color: #e74c3c;
+      font-weight: 700;
+    }
+
+    .card-border-spell {
+      box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.8);
+    }
+
+    .card-border-monster {
+      box-shadow: 0 0 0 2px rgba(46, 204, 113, 0.8);
+    }
+
+    /* Log */
+
+    .log {
+      margin-top: 6px;
+      padding: 6px 10px;
+      font-size: 0.8rem;
+      border-radius: 10px;
+      background: rgba(0,0,0,0.4);
+      max-height: 90px;
+      overflow-y: auto;
+    }
+
+    .log-line {
+      margin-bottom: 2px;
+      opacity: 0.9;
+    }
+
+    /* Quiz modal */
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.8);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+    }
+
+    .modal-backdrop.show {
+      display: flex;
+    }
+
+    .modal {
+      background: linear-gradient(145deg, #1b2848, #121933);
+      border-radius: 18px;
+      padding: 18px 20px;
+      max-width: 460px;
+      width: 90%;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.8);
+    }
+
+    .modal-title {
+      font-family: 'Cinzel', serif;
+      font-size: 1.1rem;
+      margin-bottom: 8px;
+    }
+
+    .modal-question {
+      font-size: 0.95rem;
+      margin-bottom: 10px;
+    }
+
+    .answer-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+
+    .answer-btn {
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.1);
+      padding: 7px 10px;
+      background: rgba(0,0,0,0.25);
+      color: #ecf0f1;
+      font-size: 0.9rem;
+      cursor: pointer;
+      text-align: left;
+      transition: background 0.12s ease, transform 0.1s ease, border-color 0.12s ease;
+    }
+
+    .answer-btn:hover {
+      background: rgba(255,255,255,0.06);
+      transform: translateY(-1px);
+    }
+
+    .answer-btn.correct {
+      background: #27ae60;
+      border-color: #2ecc71;
+    }
+
+    .answer-btn.incorrect {
+      background: #c0392b;
+      border-color: #e74c3c;
+    }
+
+    .quiz-result {
+      min-height: 18px;
+      font-size: 0.9rem;
+      margin-bottom: 6px;
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    /* Start overlay */
+
+    .start-overlay {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at top, rgba(255, 215, 0, 0.25), rgba(0,0,0,0.95));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 60;
+    }
+
+    .start-overlay.hidden {
+      display: none;
+    }
+
+    .start-panel {
+      background: linear-gradient(145deg, #1b2838, #111827);
+      padding: 32px 24px;
+      border-radius: 20px;
+      max-width: 460px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9);
+    }
+
+    .start-panel h1 {
+      font-family: 'Cinzel', serif;
+      font-size: 1.8rem;
+      margin-bottom: 10px;
+    }
+
+    .start-panel p {
+      font-size: 0.95rem;
+      color: #dcdde1;
+      margin-bottom: 18px;
+    }
+
+    .start-btn {
+      border: none;
+      border-radius: 999px;
+      padding: 10px 30px;
+      font-size: 1rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      background: linear-gradient(135deg, #ffd200, #ff8c00);
+      color: #2c3e50;
+      cursor: pointer;
+      box-shadow: 0 10px 30px rgba(255,215,0,0.7);
+    }
+
+    .start-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 34px rgba(255,215,0,0.9);
+    }
+
+    @media (max-width: 800px) {
+      .lane {
+        width: 80%;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .game-container {
+        max-width: 100%;
+        border-radius: 0;
+        height: 100vh;
+      }
+
+      .tower-row {
+        gap: 40px;
+      }
+
+      .lane {
+        width: 90%;
+        height: 230px;
+      }
+
+      .card {
+        min-width: 78px;
+        max-width: 78px;
+      }
+    }
+  </style>
 </head>
 <body>
-    <!-- Click to Start Overlay -->
-    <div class="start-overlay" id="startOverlay">
-        <div class="start-message">🎵 Click to enable music and start playing! 🎵</div>
-        <button class="start-btn" onclick="startGame()">
-            🎮 CLICK TO START 🎮
-        </button>
+  <!-- Start overlay to unlock audio -->
+  <div class="start-overlay" id="startOverlay">
+    <div class="start-panel">
+      <h1>Clash Royale Quiz Tower Defense</h1>
+      <p>Answer Ancient Egypt questions to gain elixir. Spend elixir on Clash Royale troops and spells. Troops march toward towers, clash in the middle, and keep damage when they survive.</p>
+      <button class="start-btn" id="startBtn">Start Game</button>
+    </div>
+  </div>
+
+  <div class="game-container">
+    <div class="title-bar">
+      <div class="title">⚔️ Clash Royale – Egypt TD ⚔️</div>
+      <div class="controls">
+        <button class="btn btn-secondary" id="muteBtn">🎵 Mute</button>
+        <button class="btn btn-primary" id="quizBtn">🧠 Answer Question</button>
+        <button class="btn btn-secondary" id="resetBtn">Reset</button>
+      </div>
     </div>
 
-    <!-- Music Controls -->
-    <div class="music-controls">
-        <button id="muteBtn" onclick="toggleMute()">🔊 Music ON</button>
-        <span id="nowPlaying" style="color: #FFD700; font-size: 0.9em; display: block; margin-top: 5px;">🎵 Lobby Music</span>
-    </div>
-
-    <!-- LOBBY SCREEN -->
-    <div class="lobby-screen" id="lobbyScreen">
-        <div class="lobby-header">
-            <h1>⚔️ CLASH ROYALE QUIZ BATTLE ⚔️</h1>
-            <p style="font-size: 1.3em; color: #a8dadc;">Ancient Egypt Edition - Multiplayer!</p>
+    <div class="stats-bar">
+      <div class="stat-tile">
+        <div class="stat-label">Enemy Tower HP</div>
+        <div class="stat-value">
+          <span id="enemyHpText">20 / 20</span>
         </div>
-
-        <div class="lobby-content">
-            <!-- Mode Selection -->
-            <div class="mode-selection">
-                <h2>🎮 Select Game Mode 🎮</h2>
-                
-                <button class="mode-btn single" onclick="startSinglePlayer()">
-                    🤖 SINGLE PLAYER<br>
-                    <span style="font-size: 0.7em;">Play against AI</span>
-                </button>
-                
-                <button class="mode-btn multi" onclick="showMultiplayer()">
-                    👥 MULTIPLAYER<br>
-                    <span style="font-size: 0.7em;">Play 1v1 with friends</span>
-                </button>
-
-                <div class="room-setup" id="roomSetup">
-                    <input type="text" id="playerName" class="room-input" placeholder="Enter your name" maxlength="20">
-                    <input type="text" id="roomName" class="room-input" placeholder="Create or join room name" maxlength="30">
-                    <button class="mode-btn single" onclick="createOrJoinRoom()">
-                        🚀 CREATE / JOIN ROOM
-                    </button>
-                    <p style="text-align: center; margin-top: 15px; color: #a8dadc;">
-                        <small>Enter a room name to create a new room or join an existing one!</small>
-                    </p>
-                </div>
-            </div>
-
-            <!-- Leaderboard -->
-            <div class="leaderboard-section">
-                <h2>🏆 LEADERBOARD 🏆</h2>
-                <div class="leaderboard-list" id="leaderboardList">
-                    <div style="text-align: center; padding: 20px; color: #a8dadc;">
-                        Loading leaderboard...
-                    </div>
-                </div>
-            </div>
+        <div class="hp-bar-outer">
+          <div class="hp-bar-inner" id="enemyHpBar"></div>
         </div>
-    </div>
-
-    <!-- GAME SCREEN -->
-    <div class="game-screen" id="gameScreen">
-        <div class="game-container">
-            <div class="game-header">
-                <h1>⚔️ CLASH ROYALE QUIZ BATTLE ⚔️</h1>
-                <p style="font-size: 1em; color: #a8dadc;">Answer Ancient Egypt questions to gain permanent elixir! MTG-style mana system!</p>
-                <p style="font-size: 0.9em; color: #ffd700; margin-top: 10px;">✅ Correct = +1 Max Elixir (resets to max each turn) | ❌ Wrong = No new elixir</p>
-            </div>
-
-            <div class="message-box" id="messageBox">
-                🎮 Waiting for game to start... 🎮
-            </div>
-
-            <div class="game-info">
-                <div class="player-panel opponent" id="opponentPanel">
-                    <h2 id="opponentName">🤖 OPPONENT</h2>
-                    <div class="stats">
-                        <div class="stat life">
-                            <span>❤️ LIFE</span>
-                            <span class="stat-value" id="opponentLife">20</span>
-                        </div>
-                        <div class="stat elixir">
-                            <span>💧 ELIXIR</span>
-                            <span class="stat-value" id="opponentElixir">0/0</span>
-                        </div>
-                        <div class="stat">
-                            <span>🃏 HAND</span>
-                            <span class="stat-value" id="opponentHandSize">0</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="player-panel player" id="playerPanel">
-                    <h2 id="playerName">👤 YOU</h2>
-                    <div class="stats">
-                        <div class="stat life">
-                            <span>❤️ LIFE</span>
-                            <span class="stat-value" id="playerLife">20</span>
-                        </div>
-                        <div class="stat elixir">
-                            <span>💧 ELIXIR</span>
-                            <span class="stat-value" id="playerElixir">0/0</span>
-                        </div>
-                        <div class="stat">
-                            <span>🃏 HAND</span>
-                            <span class="stat-value" id="playerHandSize">0</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="battlefield opponent">
-                <h3>⚔️ OPPONENT'S BATTLEFIELD ⚔️</h3>
-                <div class="cards-in-play" id="opponentBattlefield"></div>
-            </div>
-
-            <div class="battlefield player">
-                <h3>🛡️ YOUR BATTLEFIELD 🛡️</h3>
-                <div class="cards-in-play" id="playerBattlefield"></div>
-            </div>
-
-            <div class="hand">
-                <h3>🖐️ YOUR HAND 🖐️</h3>
-                <div class="hand-cards" id="playerHand"></div>
-            </div>
-
-            <div class="controls">
-                <button class="btn btn-secondary" id="attackPhaseBtn" disabled onclick="startCombat()">⚔️ COMBAT PHASE ⚔️</button>
-                <button class="btn btn-danger" id="endTurnBtn" disabled onclick="endTurn()">🔄 END TURN 🔄</button>
-                <button class="btn btn-primary" onclick="returnToLobby()">🏠 RETURN TO LOBBY</button>
-            </div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-label">Your Tower HP</div>
+        <div class="stat-value">
+          <span id="playerHpText">20 / 20</span>
         </div>
-    </div>
-
-    <!-- Quiz Modal -->
-    <div class="quiz-modal" id="quizModal">
-        <div class="quiz-content">
-            <h3 class="quiz-question" id="quizQuestion"></h3>
-            <div class="quiz-answers" id="quizAnswers"></div>
-            <div class="quiz-result" id="quizResult"></div>
+        <div class="hp-bar-outer">
+          <div class="hp-bar-inner" id="playerHpBar"></div>
         </div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-label">Your Elixir</div>
+        <div class="stat-value">
+          <span class="elixir-value" id="elixirValue">0</span>
+        </div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-label">Status</div>
+        <div class="stat-value" id="statusText">Answer questions to gain elixir, then play monsters and spells.</div>
+      </div>
     </div>
 
-    <div class="game-over" id="gameOver">
-        <h2 id="gameOverText">VICTORY!</h2>
-        <p id="gameOverMessage" style="font-size: 1.5em; margin-bottom: 30px;"></p>
-        <button class="btn btn-primary" onclick="returnToLobby()">🏠 RETURN TO LOBBY</button>
+    <div class="battlefield">
+      <div class="tower-row">
+        <div class="tower">
+          <img class="tower-img" src="red tower.png" alt="Enemy Tower">
+          <div class="tower-info enemy">
+            <div class="tower-name">Enemy Tower</div>
+            <div class="tower-hp" id="enemyTowerLabel">20 HP</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="lane" id="lane"></div>
+
+      <div class="tower-row">
+        <div class="tower">
+          <img class="tower-img" src="blue tower.png" alt="Your Tower">
+          <div class="tower-info player">
+            <div class="tower-name">Your Tower</div>
+            <div class="tower-hp" id="playerTowerLabel">20 HP</div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- Audio Elements -->
-    <audio id="lobbyMusic" loop>
-        <source src="lobby.mp3" type="audio/mpeg">
-    </audio>
-    <audio id="battleMusic" loop>
-        <source src="battle.mp3" type="audio/mpeg">
-    </audio>
+    <div class="hand-section">
+      <div class="hand-title">Monster Cards (march toward towers)</div>
+      <div class="card-row" id="monsterRow"></div>
+    </div>
 
-    <!-- Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
+    <div class="hand-section">
+      <div class="hand-title">Spell Cards (instant tower damage or healing)</div>
+      <div class="card-row" id="spellRow"></div>
+    </div>
 
-    <script>
-        // Firebase Configuration
-        let database;
-        let firebaseReady = false;
+    <div class="log" id="log"></div>
+  </div>
 
-        try {
-            const firebaseConfig = {
-                apiKey: "AIzaSyC-3Nf96W-AKn-J2gyn9krCB3n5O5iISOo",
-                authDomain: "cell-battle-game.firebaseapp.com",
-                databaseURL: "https://cell-battle-game-default-rtdb.firebaseio.com",
-                projectId: "cell-battle-game",
-                storageBucket: "cell-battle-game.firebasestorage.app",
-                messagingSenderId: "482967839438",
-                appId: "1:482967839438:web:7b291ef4b2d2bc098a269f"
-            };
+  <!-- Quiz Modal -->
+  <div class="modal-backdrop" id="quizModal">
+    <div class="modal">
+      <div class="modal-title">Ancient Egypt Quiz</div>
+      <div class="modal-question" id="quizQuestion"></div>
+      <div class="answer-list" id="quizAnswers"></div>
+      <div class="quiz-result" id="quizResult"></div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="closeQuizBtn">Close</button>
+      </div>
+    </div>
+  </div>
 
-            if (typeof firebase !== 'undefined') {
-                firebase.initializeApp(firebaseConfig);
-                database = firebase.database();
-                firebaseReady = true;
-                console.log('✅ Firebase ready!');
-            } else {
-                console.log('ℹ️ Multiplayer offline - Single player available');
+  <!-- Audio -->
+  <audio id="lobbyMusic" loop>
+    <source src="lobby.mp3" type="audio/mpeg">
+  </audio>
+  <audio id="battleMusic" loop>
+    <source src="battle.mp3" type="audio/mpeg">
+  </audio>
+
+  <script>
+    const MAX_HP = 20;
+    const PLAYER_SPEED = 0.15;  // fraction of lane per second
+    const ENEMY_SPEED = 0.13;
+    const COLLISION_DISTANCE = 0.08;
+    const ENEMY_ELIXIR_INTERVAL_MS = 3000; // AI elixir tick
+    const ENEMY_ELIXIR_PER_TICK = 1;
+
+    const state = {
+      playerHp: MAX_HP,
+      enemyHp: MAX_HP,
+      playerElixir: 0,
+      enemyElixir: 0,
+      units: [], // { id, owner: 'player'|'enemy', card, y:0..1, hp }
+      lastUnitId: 0,
+      gameOver: false,
+      quizOpen: false,
+      running: false,
+      musicMuted: false
+    };
+
+    const laneEl = document.getElementById('lane');
+    const monsterRowEl = document.getElementById('monsterRow');
+    const spellRowEl = document.getElementById('spellRow');
+    const logEl = document.getElementById('log');
+
+    const enemyHpText = document.getElementById('enemyHpText');
+    const enemyHpBar = document.getElementById('enemyHpBar');
+    const playerHpText = document.getElementById('playerHpText');
+    const playerHpBar = document.getElementById('playerHpBar');
+    const elixirValueEl = document.getElementById('elixirValue');
+    const statusTextEl = document.getElementById('statusText');
+    const enemyTowerLabel = document.getElementById('enemyTowerLabel');
+    const playerTowerLabel = document.getElementById('playerTowerLabel');
+
+    const quizModal = document.getElementById('quizModal');
+    const quizQuestionEl = document.getElementById('quizQuestion');
+    const quizAnswersEl = document.getElementById('quizAnswers');
+    const quizResultEl = document.getElementById('quizResult');
+
+    const lobbyMusic = document.getElementById('lobbyMusic');
+    const battleMusic = document.getElementById('battleMusic');
+
+    // === Card data ===
+    const monsterCards = [
+      { name: "Skeletons",    cost: 1, damage: 2, hp: 2, image: "Skeletons.png" },
+      { name: "Fire Spirit",  cost: 2, damage: 3, hp: 2, image: "Fire Spirit.png" },
+      { name: "Goblins",      cost: 2, damage: 3, hp: 3, image: "Goblins.png" },
+      { name: "Bomber",       cost: 3, damage: 4, hp: 3, image: "Bomber.png" },
+      { name: "Knight",       cost: 3, damage: 4, hp: 5, image: "Knight.png" },
+      { name: "Dart Goblin",  cost: 3, damage: 4, hp: 3, image: "Dart Goblin.png" },
+      { name: "Minions",      cost: 3, damage: 4, hp: 3, image: "Minions.png" },
+      { name: "Princess",     cost: 3, damage: 4, hp: 3, image: "Princess.png" },
+      { name: "Ice Wizard",   cost: 3, damage: 4, hp: 4, image: "Ice Wizard.png" },
+      { name: "Musketeer",    cost: 4, damage: 5, hp: 4, image: "Musketeer.png" },
+      { name: "Hog Rider",    cost: 4, damage: 6, hp: 4, image: "Hog Rider.png" },
+      { name: "Prince",       cost: 5, damage: 7, hp: 5, image: "Prince.png" },
+      { name: "Witch",        cost: 5, damage: 5, hp: 5, image: "Witch.png" },
+      { name: "Giant",        cost: 5, damage: 6, hp: 10, image: "giant.png" },
+      { name: "Wizard",       cost: 5, damage: 6, hp: 4, image: "Wizard.png" },
+      { name: "Barbarians",   cost: 5, damage: 6, hp: 7, image: "Barbarians.png" },
+      { name: "Pekka",        cost: 7, damage: 9, hp: 12, image: "Pekka.png" },
+      { name: "Mega Knight",  cost: 7, damage: 9, hp: 12, image: "Mega Knight.png" }
+    ];
+
+    const spellCards = [
+      { name: "Zap",            cost: 2, damage: 2, heal: 0, image: "zap.png" },
+      { name: "Giant Snowball", cost: 2, damage: 2, heal: 0, image: "Giant Snowball.png" },
+      { name: "Arrows",         cost: 3, damage: 3, heal: 0, image: "Arrows.png" },
+      { name: "Heal",           cost: 3, damage: 0, heal: 4, image: "Heal.png" },
+      { name: "Earthquake",     cost: 3, damage: 4, heal: 0, image: "Earthquake.png" },
+      { name: "Freeze",         cost: 4, damage: 5, heal: 0, image: "Freeze.png" },
+      { name: "Fireball",       cost: 4, damage: 5, heal: 0, image: "Fireball.png" },
+      { name: "Poison",         cost: 4, damage: 5, heal: 0, image: "Poison.png" },
+      { name: "Lightning",      cost: 6, damage: 6, heal: 0, image: "Lightning.png" },
+      { name: "Rocket",         cost: 6, damage: 7, heal: 0, image: "Rocket.png" }
+    ];
+
+    // === Egypt / Pharaoh questions ===
+    const questions = [
+      {
+        q: "What river was central to ancient Egyptian civilization?",
+        choices: ["Tigris River", "Nile River", "Euphrates River", "Jordan River"],
+        correct: 1
+      },
+      {
+        q: "What were the Egyptian kings called?",
+        choices: ["Emperors", "Pharaohs", "Kings", "Sultans"],
+        correct: 1
+      },
+      {
+        q: "What writing system did ancient Egyptians use?",
+        choices: ["Cuneiform", "Hieroglyphics", "Alphabet", "Pictographs"],
+        correct: 1
+      },
+      {
+        q: "What did Egyptians build as tombs for their pharaohs?",
+        choices: ["Temples", "Pyramids", "Ziggurats", "Castles"],
+        correct: 1
+      },
+      {
+        q: "What material did ancient Egyptians often write on?",
+        choices: ["Papyrus", "Clay tablets", "Parchment", "Stone"],
+        correct: 0
+      },
+      {
+        q: "What process did Egyptians use to preserve bodies?",
+        choices: ["Cremation", "Mummification", "Freezing", "Burning"],
+        correct: 1
+      },
+      {
+        q: "Which structure is one of the Seven Wonders of the Ancient World?",
+        choices: ["Great Sphinx", "Great Pyramid of Giza", "Temple of Karnak", "Abu Simbel"],
+        correct: 1
+      },
+      {
+        q: "What was the Nile River delta region called?",
+        choices: ["Upper Egypt", "Lower Egypt", "Middle Egypt", "Outer Egypt"],
+        correct: 1
+      },
+      {
+        q: "Who was a famous female pharaoh of Egypt?",
+        choices: ["Nefertiti", "Hatshepsut", "Cleopatra", "Isis"],
+        correct: 1
+      },
+      {
+        q: "What did ancient Egyptians believe happened in the afterlife?",
+        choices: [
+          "There was no afterlife",
+          "Only pharaohs had afterlife",
+          "Souls were judged and could have eternal life",
+          "Everyone was punished"
+        ],
+        correct: 2
+      },
+      {
+        q: "Which god was considered king of the Egyptian gods?",
+        choices: ["Osiris", "Anubis", "Ra", "Horus"],
+        correct: 2
+      },
+      {
+        q: "Which animal is linked to the god Anubis?",
+        choices: ["Cat", "Jackal", "Falcon", "Crocodile"],
+        correct: 1
+      },
+      {
+        q: "Why was the Nile's yearly flood important?",
+        choices: [
+          "It destroyed farms",
+          "It left rich silt for farming",
+          "It scared invaders",
+          "It created islands"
+        ],
+        correct: 1
+      },
+      {
+        q: "Most ancient Egyptians were:",
+        choices: ["Soldiers", "Priests", "Farmers", "Merchants"],
+        correct: 2
+      },
+      {
+        q: "Who deciphered hieroglyphics using the Rosetta Stone?",
+        choices: ["Napoleon", "Champollion", "Carter", "Petrie"],
+        correct: 1
+      },
+      {
+        q: "Which pharaoh ordered the Great Pyramid at Giza?",
+        choices: ["Tutankhamun", "Khufu", "Ramses II", "Akhenaten"],
+        correct: 1
+      },
+      {
+        q: "What was stored in canopic jars?",
+        choices: ["Jewelry", "Organs", "Scrolls", "Sand"],
+        correct: 1
+      },
+      {
+        q: "What was the purpose of the Book of the Dead?",
+        choices: [
+          "A list of pharaohs",
+          "A map of the Nile",
+          "Spells to guide the dead in the afterlife",
+          "Egyptian laws"
+        ],
+        correct: 2
+      },
+      {
+        q: "Which boy pharaoh's tomb was found nearly intact in 1922?",
+        choices: ["Ramses II", "Tutankhamun", "Khafre", "Djoser"],
+        correct: 1
+      },
+      {
+        q: "Which stone helped decode hieroglyphics?",
+        choices: ["Obelisk Stone", "Pyramid Stone", "Rosetta Stone", "Sphinx Stone"],
+        correct: 2
+      }
+    ];
+
+    // Logging
+    function log(msg) {
+      const line = document.createElement('div');
+      line.className = 'log-line';
+      line.textContent = msg;
+      logEl.appendChild(line);
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    function updateHpBars() {
+      const enemyPct = (state.enemyHp / MAX_HP) * 100;
+      const playerPct = (state.playerHp / MAX_HP) * 100;
+      enemyHpBar.style.width = enemyPct + '%';
+      playerHpBar.style.width = playerPct + '%';
+      enemyHpText.textContent = state.enemyHp + ' / ' + MAX_HP;
+      playerHpText.textContent = state.playerHp + ' / ' + MAX_HP;
+      enemyTowerLabel.textContent = state.enemyHp + ' HP';
+      playerTowerLabel.textContent = state.playerHp + ' HP';
+    }
+
+    function updateElixir() {
+      elixirValueEl.textContent = state.playerElixir;
+    }
+
+    function updateStatus(text) {
+      statusTextEl.textContent = text;
+    }
+
+    function checkGameOver() {
+      if (state.gameOver) return;
+      if (state.enemyHp <= 0) {
+        state.enemyHp = 0;
+        updateHpBars();
+        state.gameOver = true;
+        updateStatus('🏆 You destroyed the enemy tower!');
+        log('🏆 Victory! Enemy tower reduced to 0 HP.');
+      } else if (state.playerHp <= 0) {
+        state.playerHp = 0;
+        updateHpBars();
+        state.gameOver = true;
+        updateStatus('💀 Your tower has fallen.');
+        log('💀 Defeat. Your tower was destroyed.');
+      }
+    }
+
+    function renderUnits() {
+      laneEl.innerHTML = '';
+      state.units.forEach(unit => {
+        const div = document.createElement('div');
+        div.className = 'unit ' + (unit.owner === 'player' ? 'player-unit' : 'enemy-unit');
+
+        const laneHeight = laneEl.clientHeight || 260;
+        // y = 0 bottom (your tower), y = 1 top (enemy)
+        const yPx = (1 - unit.y) * laneHeight;
+        div.style.top = (yPx - 37) + 'px';
+
+        const imgPath = encodeURI(unit.card.image);
+        div.innerHTML = `
+          <img src="${imgPath}" alt="${unit.card.name}">
+          <div class="unit-hp-bar">
+            <div class="unit-hp-inner" style="width:${Math.max(0, (unit.hp / unit.card.hp) * 100)}%"></div>
+          </div>
+        `;
+        laneEl.appendChild(div);
+      });
+    }
+
+    function updateAllUi() {
+      updateHpBars();
+      updateElixir();
+      renderUnits();
+      checkGameOver();
+      refreshCardDisabledStates();
+    }
+
+    // === Cards UI ===
+    function createCardEl(card, isSpell) {
+      const div = document.createElement('div');
+      div.className = 'card ' + (isSpell ? 'card-border-spell' : 'card-border-monster');
+
+      const imgPath = encodeURI(card.image);
+      div.innerHTML = `
+        <img src="${imgPath}" alt="${card.name}">
+        <div class="card-name">${card.name}</div>
+        <div class="card-meta">
+          <span class="elixir-badge">${card.cost}</span>
+          <span class="damage-badge">${isSpell && card.heal > 0 ? '+' + card.heal : card.damage}</span>
+        </div>
+      `;
+
+      function updateDisabled() {
+        if (!state.running || state.quizOpen || state.gameOver || state.playerElixir < card.cost) {
+          div.classList.add('disabled');
+        } else {
+          div.classList.remove('disabled');
+        }
+      }
+
+      div.addEventListener('click', () => {
+        if (div.classList.contains('disabled')) return;
+        if (isSpell) {
+          playSpell(card);
+        } else {
+          playMonster(card);
+        }
+      });
+
+      div._updateDisabled = updateDisabled;
+      return div;
+    }
+
+    function renderHands() {
+      monsterRowEl.innerHTML = '';
+      spellRowEl.innerHTML = '';
+
+      monsterCards.forEach(card => {
+        const el = createCardEl(card, false);
+        monsterRowEl.appendChild(el);
+      });
+
+      spellCards.forEach(card => {
+        const el = createCardEl(card, true);
+        spellRowEl.appendChild(el);
+      });
+    }
+
+    function refreshCardDisabledStates() {
+      document.querySelectorAll('.card').forEach(cardEl => {
+        if (typeof cardEl._updateDisabled === 'function') {
+          cardEl._updateDisabled();
+        }
+      });
+    }
+
+    // === Spawning ===
+    function playMonster(card) {
+      if (state.playerElixir < card.cost || state.gameOver) return;
+      state.playerElixir -= card.cost;
+
+      // Your units start at the BOTTOM (your tower, y=0) and move UP to y=1
+      const unit = {
+        id: ++state.lastUnitId,
+        owner: 'player',
+        card,
+        y: 0,
+        hp: card.hp
+      };
+      state.units.push(unit);
+
+      log(`👣 You deployed ${card.name}!`);
+      updateStatus(`You deployed ${card.name} toward the enemy tower.`);
+      updateAllUi();
+    }
+
+    function playSpell(card) {
+      if (state.playerElixir < card.cost || state.gameOver) return;
+      state.playerElixir -= card.cost;
+
+      if (card.heal > 0) {
+        const before = state.playerHp;
+        state.playerHp = Math.min(MAX_HP, state.playerHp + card.heal);
+        const healed = state.playerHp - before;
+        log(`💚 ${card.name} heals your tower for ${healed} HP. (Your HP: ${state.playerHp})`);
+        updateStatus(`${card.name} heals your tower.`);
+      } else if (card.damage > 0) {
+        state.enemyHp = Math.max(0, state.enemyHp - card.damage);
+        log(`🔥 ${card.name} hits the enemy tower for ${card.damage} damage! (Enemy HP: ${state.enemyHp})`);
+        updateStatus(`${card.name} slams the enemy tower!`);
+      }
+
+      updateAllUi();
+    }
+
+    function spawnEnemyMonster(card) {
+      // Enemy units start at the TOP (enemy tower, y=1) and move DOWN to y=0
+      const unit = {
+        id: ++state.lastUnitId,
+        owner: 'enemy',
+        card,
+        y: 1,
+        hp: card.hp
+      };
+      state.units.push(unit);
+      log(`🤖 Enemy deploys ${card.name}!`);
+    }
+
+    function enemyCastSpell(card) {
+      if (card.heal > 0) {
+        const before = state.enemyHp;
+        state.enemyHp = Math.min(MAX_HP, state.enemyHp + card.heal);
+        const healed = state.enemyHp - before;
+        log(`💚 Enemy uses ${card.name} and heals their tower for ${healed} HP.`);
+      } else if (card.damage > 0) {
+        state.playerHp = Math.max(0, state.playerHp - card.damage);
+        log(`🔥 Enemy casts ${card.name}, dealing ${card.damage} damage to your tower! (Your HP: ${state.playerHp})`);
+      }
+      updateAllUi();
+    }
+
+    function enemyAiTick() {
+      if (!state.running || state.gameOver) return;
+      state.enemyElixir += ENEMY_ELIXIR_PER_TICK;
+
+      if (state.enemyElixir < 2) return;
+      if (Math.random() > 0.7) return;
+
+      const allOptions = monsterCards.concat(spellCards);
+      const playable = allOptions.filter(card => card.cost <= state.enemyElixir);
+      if (playable.length === 0) return;
+
+      const card = playable[Math.floor(Math.random() * playable.length)];
+      state.enemyElixir -= card.cost;
+
+      if (spellCards.includes(card) && monsterCards.some(c => c.cost <= state.enemyElixir + card.cost)) {
+        if (Math.random() < 0.7) {
+          const monstersPlayable = monsterCards.filter(c => c.cost <= state.enemyElixir + card.cost);
+          const m = monstersPlayable[Math.floor(Math.random() * monstersPlayable.length)];
+          state.enemyElixir += card.cost;
+          state.enemyElixir -= m.cost;
+          spawnEnemyMonster(m);
+        } else {
+          enemyCastSpell(card);
+        }
+      } else if (monsterCards.includes(card)) {
+        spawnEnemyMonster(card);
+      } else {
+        enemyCastSpell(card);
+      }
+
+      updateAllUi();
+    }
+
+    // === Movement & combat ===
+    let lastTimestamp = null;
+
+    function gameLoop(timestamp) {
+      if (!state.running) {
+        requestAnimationFrame(gameLoop);
+        return;
+      }
+
+      if (!lastTimestamp) lastTimestamp = timestamp;
+      const dt = (timestamp - lastTimestamp) / 1000;
+      lastTimestamp = timestamp;
+
+      if (!state.gameOver) {
+        updateUnits(dt);
+      }
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    function updateUnits(dt) {
+      // Move units:
+      //  - Your units: bottom (0) -> top (1)
+      //  - Enemy units: top (1) -> bottom (0)
+      state.units.forEach(unit => {
+        if (unit.owner === 'player') {
+          unit.y += PLAYER_SPEED * dt;
+        } else {
+          unit.y -= ENEMY_SPEED * dt;
+        }
+      });
+
+      const toRemove = new Set();
+
+      // Tower hits
+      state.units.forEach(unit => {
+        if (unit.owner === 'player' && unit.y >= 1) {
+          state.enemyHp = Math.max(0, state.enemyHp - unit.card.damage);
+          log(`💥 ${unit.card.name} hits the enemy tower for ${unit.card.damage} damage! (Enemy HP: ${state.enemyHp})`);
+          toRemove.add(unit.id);
+        } else if (unit.owner === 'enemy' && unit.y <= 0) {
+          state.playerHp = Math.max(0, state.playerHp - unit.card.damage);
+          log(`💥 Enemy's ${unit.card.name} hits your tower for ${unit.card.damage} damage! (Your HP: ${state.playerHp})`);
+          toRemove.add(unit.id);
+        }
+      });
+
+      // Mid-lane collisions: damage persists
+      for (let i = 0; i < state.units.length; i++) {
+        const u1 = state.units[i];
+        if (u1.owner !== 'player') continue;
+        for (let j = 0; j < state.units.length; j++) {
+          const u2 = state.units[j];
+          if (u2.owner !== 'enemy') continue;
+          if (toRemove.has(u1.id) || toRemove.has(u2.id)) continue;
+
+          if (Math.abs(u1.y - u2.y) < COLLISION_DISTANCE) {
+            u1.hp -= u2.card.damage;
+            u2.hp -= u1.card.damage;
+            log(`⚔️ ${u1.card.name} clashes with ${u2.card.name}!`);
+
+            if (u1.hp <= 0) {
+              log(`💀 Your ${u1.card.name} falls in battle.`);
+              toRemove.add(u1.id);
             }
-        } catch (error) {
-            console.log('ℹ️ Multiplayer offline - Single player available');
-            firebaseReady = false;
-        }
-
-        // Music System
-        let lobbyMusic = document.getElementById('lobbyMusic');
-        let battleMusic = document.getElementById('battleMusic');
-        let currentMusic = 'lobby';
-        let musicMuted = false;
-        let gameStarted = false;
-
-        function startGame() {
-            // Hide overlay
-            document.getElementById('startOverlay').classList.add('hidden');
-            gameStarted = true;
-            
-            // Start lobby music
-            playLobbyMusic();
-            
-            // Load leaderboard
-            loadLeaderboard();
-        }
-
-        function playLobbyMusic() {
-            if (!musicMuted) {
-                battleMusic.pause();
-                battleMusic.currentTime = 0;
-                lobbyMusic.volume = 0.5; // Set volume to 50%
-                lobbyMusic.play().then(() => {
-                    console.log('Lobby music playing');
-                }).catch(e => {
-                    console.log('Music autoplay blocked:', e);
-                    // Show message to user if needed
-                });
-                document.getElementById('nowPlaying').textContent = '🎵 Lobby Music';
-                currentMusic = 'lobby';
+            if (u2.hp <= 0) {
+              log(`💀 Enemy's ${u2.card.name} is destroyed.`);
+              toRemove.add(u2.id);
             }
+
+            // small nudge apart to avoid jitter
+            u1.y += 0.02;
+            u2.y -= 0.02;
+          }
         }
+      }
 
-        function playBattleMusic() {
-            if (!musicMuted) {
-                lobbyMusic.pause();
-                lobbyMusic.currentTime = 0;
-                battleMusic.volume = 0.5; // Set volume to 50%
-                battleMusic.play().then(() => {
-                    console.log('Battle music playing');
-                }).catch(e => {
-                    console.log('Music autoplay blocked:', e);
-                });
-                document.getElementById('nowPlaying').textContent = '⚔️ Battle Music';
-                currentMusic = 'battle';
-            }
-        }
+      if (toRemove.size > 0) {
+        state.units = state.units.filter(u => !toRemove.has(u.id));
+      }
 
-        function toggleMute() {
-            musicMuted = !musicMuted;
-            const btn = document.getElementById('muteBtn');
-            if (musicMuted) {
-                lobbyMusic.pause();
-                battleMusic.pause();
-                btn.textContent = '🔇 Music OFF';
-            } else {
-                btn.textContent = '🔊 Music ON';
-                if (currentMusic === 'lobby') {
-                    playLobbyMusic();
-                } else {
-                    playBattleMusic();
-                }
-            }
-        }
+      updateAllUi();
+    }
 
-        // On page load, show the start overlay (music will play after user clicks)
-        window.addEventListener('load', () => {
-            // Don't auto-play music - wait for user click
-            document.getElementById('startOverlay').classList.remove('hidden');
-        });
+    // === Quiz logic (player elixir source) ===
+    function openQuiz() {
+      if (!state.running || state.gameOver) return;
+      state.quizOpen = true;
+      quizResultEl.textContent = '';
+      quizAnswersEl.innerHTML = '';
 
-        // Ancient Egypt Quiz Questions
-        const quizQuestions = [
-            {
-                question: "What river was central to ancient Egyptian civilization?",
-                answers: ["Tigris River", "Nile River", "Euphrates River", "Jordan River"],
-                correct: 1
-            },
-            {
-                question: "What were the Egyptian kings called?",
-                answers: ["Emperors", "Pharaohs", "Kings", "Sultans"],
-                correct: 1
-            },
-            {
-                question: "What writing system did ancient Egyptians use?",
-                answers: ["Cuneiform", "Hieroglyphics", "Alphabet", "Pictographs"],
-                correct: 1
-            },
-            {
-                question: "What did Egyptians build as tombs for their pharaohs?",
-                answers: ["Temples", "Pyramids", "Ziggurats", "Castles"],
-                correct: 1
-            },
-            {
-                question: "What material did ancient Egyptians use for writing?",
-                answers: ["Papyrus", "Clay tablets", "Parchment", "Stone"],
-                correct: 0
-            },
-            {
-                question: "What process did Egyptians use to preserve bodies?",
-                answers: ["Embalming", "Mummification", "Cremation", "Burial"],
-                correct: 1
-            },
-            {
-                question: "Which Egyptian structure is one of the Seven Wonders of the Ancient World?",
-                answers: ["Great Sphinx", "Great Pyramid of Giza", "Temple of Karnak", "Abu Simbel"],
-                correct: 1
-            },
-            {
-                question: "What was the Nile River delta region called?",
-                answers: ["Upper Egypt", "Lower Egypt", "Middle Egypt", "Outer Egypt"],
-                correct: 1
-            },
-            {
-                question: "Who was the famous female pharaoh of Egypt?",
-                answers: ["Nefertiti", "Hatshepsut", "Cleopatra", "Isis"],
-                correct: 1
-            },
-            {
-                question: "What did ancient Egyptians believe about the afterlife?",
-                answers: ["There was no afterlife", "Only pharaohs had an afterlife", "Everyone could have an eternal afterlife", "Afterlife was punishment"],
-                correct: 2
-            },
-            {
-                question: "What god was considered the king of Egyptian gods?",
-                answers: ["Osiris", "Anubis", "Ra", "Horus"],
-                correct: 2
-            },
-            {
-                question: "What animal was sacred to the god Anubis?",
-                answers: ["Cat", "Jackal", "Falcon", "Crocodile"],
-                correct: 1
-            },
-            {
-                question: "Why was the Nile River flooding important to Egypt?",
-                answers: ["It provided water for drinking", "It left rich soil for farming", "It created fishing opportunities", "It protected from invaders"],
-                correct: 1
-            },
-            {
-                question: "What was the main occupation of most ancient Egyptians?",
-                answers: ["Soldiers", "Priests", "Farmers", "Merchants"],
-                correct: 2
-            },
-            {
-                question: "Who deciphered Egyptian hieroglyphics using the Rosetta Stone?",
-                answers: ["Napoleon", "Champollion", "Carter", "Petrie"],
-                correct: 1
-            }
-        ];
+      const question = questions[Math.floor(Math.random() * questions.length)];
+      quizQuestionEl.textContent = question.q;
 
-        // Card Database
-        const cardDatabase = [
-            // CREATURES
-            { name: "Skeletons", cost: 1, power: 1, toughness: 1, type: "creature", image: "Skeletons.png" },
-            { name: "Fire Spirit", cost: 2, power: 2, toughness: 1, type: "creature", image: "Fire Spirit.png" },
-            { name: "Goblins", cost: 2, power: 2, toughness: 2, type: "creature", image: "Goblins.png" },
-            { name: "Bomber", cost: 2, power: 2, toughness: 2, type: "creature", image: "Bomber.png" },
-            { name: "Knight", cost: 3, power: 2, toughness: 3, type: "creature", image: "Knight.png" },
-            { name: "Dart Goblin", cost: 3, power: 3, toughness: 2, type: "creature", image: "Dart Goblin.png" },
-            { name: "Minions", cost: 3, power: 3, toughness: 2, type: "creature", image: "Minions.png" },
-            { name: "Princess", cost: 3, power: 2, toughness: 2, type: "creature", image: "Princess.png" },
-            { name: "Ice Wizard", cost: 3, power: 2, toughness: 3, type: "creature", image: "Ice Wizard.png" },
-            { name: "Musketeer", cost: 4, power: 3, toughness: 3, type: "creature", image: "Musketeer.png" },
-            { name: "Hog Rider", cost: 4, power: 4, toughness: 3, type: "creature", image: "Hog Rider.png" },
-            { name: "Prince", cost: 5, power: 5, toughness: 4, type: "creature", image: "Prince.png" },
-            { name: "Witch", cost: 5, power: 3, toughness: 4, type: "creature", image: "Witch.png" },
-            { name: "Giant", cost: 5, power: 4, toughness: 6, type: "creature", image: "giant.png" },
-            { name: "Wizard", cost: 6, power: 5, toughness: 4, type: "creature", image: "Wizard.png" },
-            { name: "Barbarians", cost: 6, power: 4, toughness: 5, type: "creature", image: "Barbarians.png" },
-            { name: "Pekka", cost: 7, power: 7, toughness: 7, type: "creature", image: "Pekka.png" },
-            { name: "Mega Knight", cost: 7, power: 6, toughness: 6, type: "creature", image: "Mega Knight.png" },
-            
-            // SPELLS
-            { name: "Zap", cost: 2, type: "instant", image: "zap.png", effect: "Deal 2 damage, tap creature" },
-            { name: "Giant Snowball", cost: 2, type: "instant", image: "Giant Snowball.png", effect: "Deal 2 damage to 2 targets" },
-            { name: "Arrows", cost: 3, type: "instant", image: "Arrows.png", effect: "Destroy weak creatures" },
-            { name: "Heal", cost: 3, type: "instant", image: "Heal.png", effect: "Heal creature +3" },
-            { name: "Earthquake", cost: 3, type: "sorcery", image: "Earthquake.png", effect: "Deal 3 to all" },
-            { name: "Freeze", cost: 4, type: "instant", image: "Freeze.png", effect: "Tap all opponent creatures" },
-            { name: "Fireball", cost: 4, type: "instant", image: "Fireball.png", effect: "Deal 4 damage" },
-            { name: "Poison", cost: 4, type: "sorcery", image: "Poison.png", effect: "Deal 2 to all opponents" },
-            { name: "Lightning", cost: 6, type: "instant", image: "Lightning.png", effect: "Deal 5 to 3 targets" },
-            { name: "Rocket", cost: 6, type: "instant", image: "Rocket.png", effect: "Deal 7 damage" }
-        ];
+      question.choices.forEach((choiceText, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'answer-btn';
+        btn.textContent = choiceText;
+        btn.addEventListener('click', () => handleAnswer(question, index, btn));
+        quizAnswersEl.appendChild(btn);
+      });
 
-        // Game State
-        let gameState = {
-            mode: 'single', // 'single' or 'multi'
-            roomId: null,
-            playerId: null,
-            playerName: '',
-            isPlayer1: false,
-            currentTurn: null,
-            player: { life: 20, elixir: 0, maxElixir: 0, hand: [], battlefield: [], deck: [] },
-            opponent: { life: 20, elixir: 0, maxElixir: 0, hand: [], battlefield: [], deck: [] },
-            currentPhase: 'quiz',
-            turn: 0,
-            attackers: [],
-            gameStarted: false
-        };
+      quizModal.classList.add('show');
+      refreshCardDisabledStates();
+    }
 
-        // Leaderboard Functions
-        function loadLeaderboard() {
-            if (!firebaseReady) return;
-            const leaderboardRef = database.ref('leaderboard');
-            leaderboardRef.orderByChild('wins').limitToLast(10).once('value', (snapshot) => {
-                const leaderboardDiv = document.getElementById('leaderboardList');
-                leaderboardDiv.innerHTML = '';
-                
-                const entries = [];
-                snapshot.forEach((child) => {
-                    entries.push({...child.val(), id: child.key});
-                });
-                
-                entries.reverse().forEach((entry, index) => {
-                    const div = document.createElement('div');
-                    div.className = 'leaderboard-entry' + (index < 3 ? ' top3' : '');
-                    const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}.`;
-                    div.innerHTML = `
-                        <span style="font-size: 1.3em;">${medal} ${entry.name || 'Anonymous'}</span>
-                        <span>
-                            <span style="color: #00b894; font-weight: bold;">✓ ${entry.wins || 0}</span> / 
-                            <span style="color: #d63031; font-weight: bold;">✗ ${entry.losses || 0}</span>
-                        </span>
-                    `;
-                    leaderboardDiv.appendChild(div);
-                });
+    function closeQuiz() {
+      quizModal.classList.remove('show');
+      state.quizOpen = false;
+      refreshCardDisabledStates();
+    }
 
-                if (entries.length === 0) {
-                    leaderboardDiv.innerHTML = '<div style="text-align: center; padding: 20px; color: #a8dadc;">No players yet. Be the first!</div>';
-                }
-            });
-        }
+    function handleAnswer(question, selectedIndex, btnEl) {
+      const buttons = quizAnswersEl.querySelectorAll('.answer-btn');
+      buttons.forEach(b => b.disabled = true);
 
-        function updateLeaderboard(playerId, playerName, won) {
-            if (!firebaseReady) return;
-            const playerRef = database.ref('leaderboard/' + playerId);
-            playerRef.transaction((current) => {
-                if (current === null) {
-                    return {
-                        name: playerName,
-                        wins: won ? 1 : 0,
-                        losses: won ? 0 : 1
-                    };
-                }
-                current.name = playerName;
-                if (won) {
-                    current.wins = (current.wins || 0) + 1;
-                } else {
-                    current.losses = (current.losses || 0) + 1;
-                }
-                return current;
-            }).then(() => {
-                loadLeaderboard();
-            });
-        }
+      if (selectedIndex === question.correct) {
+        btnEl.classList.add('correct');
+        quizResultEl.textContent = '✅ Correct! +1 elixir.';
+        quizResultEl.style.color = '#2ecc71';
+        state.playerElixir += 1;
+        log(`✅ Correct: your elixir is now ${state.playerElixir}.`);
+        updateStatus('Nice! Spend your elixir on monsters or spells.');
+      } else {
+        btnEl.classList.add('incorrect');
+        buttons[question.correct].classList.add('correct');
+        quizResultEl.textContent = '❌ Incorrect. -1 elixir (cannot go below 0).';
+        quizResultEl.style.color = '#e74c3c';
+        state.playerElixir = Math.max(0, state.playerElixir - 1);
+        log(`❌ Incorrect: your elixir is now ${state.playerElixir}.`);
+        updateStatus('Tough one. Answer again to rebuild elixir.');
+      }
 
-        // UI Functions
-        function showMultiplayer() {
-            if (!firebaseReady) {
-                alert('Multiplayer is offline. Try Single Player!');
-                return;
-            }
-            document.getElementById('roomSetup').classList.add('show');
-        }
+      updateAllUi();
 
-        function startSinglePlayer() {
-            gameState.mode = 'single';
-            gameState.playerId = 'player_' + Date.now();
-            gameState.playerName = 'You';
-            document.getElementById('lobbyScreen').classList.add('hidden');
-            document.getElementById('gameScreen').classList.add('show');
-            playBattleMusic();
-            initGame();
-        }
+      setTimeout(() => {
+        closeQuiz();
+      }, 2200);
+    }
 
-        function createOrJoinRoom() {
-            if (!firebaseReady) {
-                alert('Multiplayer is offline!');
-                return;
-            }
-            
-            const playerName = document.getElementById('playerName').value.trim();
-            const roomName = document.getElementById('roomName').value.trim();
-            
-            if (!playerName) {
-                alert('Please enter your name!');
-                return;
-            }
-            
-            if (!roomName) {
-                alert('Please enter a room name!');
-                return;
-            }
-            
-            gameState.mode = 'multi';
-            gameState.roomId = roomName.toLowerCase().replace(/[^a-z0-9]/g, '');
-            gameState.playerId = 'player_' + Date.now();
-            gameState.playerName = playerName;
-            
-            const roomRef = database.ref('rooms/' + gameState.roomId);
-            
-            roomRef.once('value', (snapshot) => {
-                if (snapshot.exists()) {
-                    // Room exists, join as player 2
-                    const roomData = snapshot.val();
-                    if (roomData.player2) {
-                        alert('Room is full!');
-                        return;
-                    }
-                    gameState.isPlayer1 = false;
-                    roomRef.update({
-                        player2: gameState.playerId,
-                        player2Name: gameState.playerName,
-                        status: 'playing'
-                    }).then(() => {
-                        joinGame();
-                    });
-                } else {
-                    // Create new room as player 1
-                    gameState.isPlayer1 = true;
-                    roomRef.set({
-                        player1: gameState.playerId,
-                        player1Name: gameState.playerName,
-                        player2: null,
-                        player2Name: null,
-                        status: 'waiting',
-                        createdAt: Date.now()
-                    }).then(() => {
-                        joinGame();
-                    });
-                }
-            });
-        }
+    // === Music ===
+    function playLobbyMusic() {
+      if (state.musicMuted) return;
+      battleMusic.pause();
+      battleMusic.currentTime = 0;
+      lobbyMusic.volume = 0.4;
+      lobbyMusic.play().catch(() => {});
+    }
 
-        function joinGame() {
-            document.getElementById('lobbyScreen').classList.add('hidden');
-            document.getElementById('gameScreen').classList.add('show');
-            playBattleMusic();
-            
-            if (gameState.isPlayer1) {
-                showMessage('⏳ Waiting for opponent to join room: ' + document.getElementById('roomName').value);
-                // Listen for player 2
-                const roomRef = database.ref('rooms/' + gameState.roomId);
-                roomRef.on('value', (snapshot) => {
-                    const roomData = snapshot.val();
-                    if (roomData && roomData.player2 && roomData.status === 'playing') {
-                        document.getElementById('opponentName').textContent = '👤 ' + roomData.player2Name;
-                        initGame();
-                        roomRef.off(); // Stop listening
-                    }
-                });
-            } else {
-                const roomRef = database.ref('rooms/' + gameState.roomId);
-                roomRef.once('value', (snapshot) => {
-                    const roomData = snapshot.val();
-                    if (roomData) {
-                        document.getElementById('opponentName').textContent = '👤 ' + roomData.player1Name;
-                        initGame();
-                    }
-                });
-            }
-        }
+    function playBattleMusic() {
+      if (state.musicMuted) return;
+      lobbyMusic.pause();
+      lobbyMusic.currentTime = 0;
+      battleMusic.volume = 0.4;
+      battleMusic.play().catch(() => {});
+    }
 
-        function returnToLobby() {
-            location.reload();
-        }
+    function stopMusic() {
+      lobbyMusic.pause();
+      battleMusic.pause();
+    }
 
-        // Attack Effects
-        function triggerAttackEffect() {
-            document.body.classList.add('screen-shake');
-            setTimeout(() => {
-                document.body.classList.remove('screen-shake');
-            }, 500);
-            
-            const flash = document.createElement('div');
-            flash.className = 'attack-flash';
-            document.body.appendChild(flash);
-            setTimeout(() => {
-                flash.remove();
-            }, 600);
-            
-            playAttackSound();
-        }
+    function toggleMute() {
+      state.musicMuted = !state.musicMuted;
+      const btn = document.getElementById('muteBtn');
+      if (state.musicMuted) {
+        btn.textContent = '🔇 Unmute';
+        stopMusic();
+      } else {
+        btn.textContent = '🎵 Mute';
+        if (state.running) playBattleMusic();
+        else playLobbyMusic();
+      }
+    }
 
-        function playAttackSound() {
-            try {
-                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                
-                const oscillator1 = audioContext.createOscillator();
-                const oscillator2 = audioContext.createOscillator();
-                const gainNode = audioContext.createGain();
-                
-                oscillator1.connect(gainNode);
-                oscillator2.connect(gainNode);
-                gainNode.connect(audioContext.destination);
-                
-                oscillator1.type = 'sawtooth';
-                oscillator1.frequency.setValueAtTime(100, audioContext.currentTime);
-                oscillator1.frequency.exponentialRampToValueAtTime(50, audioContext.currentTime + 0.3);
-                
-                oscillator2.type = 'triangle';
-                oscillator2.frequency.setValueAtTime(150, audioContext.currentTime);
-                oscillator2.frequency.exponentialRampToValueAtTime(75, audioContext.currentTime + 0.3);
-                
-                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-                
-                oscillator1.start(audioContext.currentTime);
-                oscillator1.stop(audioContext.currentTime + 0.3);
-                oscillator2.start(audioContext.currentTime);
-                oscillator2.stop(audioContext.currentTime + 0.3);
-            } catch (e) {
-                console.log('Audio not supported');
-            }
-        }
+    // === Reset ===
+    function resetGame() {
+      state.playerHp = MAX_HP;
+      state.enemyHp = MAX_HP;
+      state.playerElixir = 0;
+      state.enemyElixir = 0;
+      state.units = [];
+      state.lastUnitId = 0;
+      state.gameOver = false;
+      laneEl.innerHTML = '';
+      logEl.innerHTML = '';
+      updateStatus('Answer questions to gain elixir, then play monsters and spells.');
+      updateAllUi();
+      log('Game reset. Towers at 20 HP. Elixir 0.');
+    }
 
-        // Game Functions
-        function initGame() {
-            gameState.player.deck = shuffleDeck([...cardDatabase]);
-            gameState.opponent.deck = shuffleDeck([...cardDatabase]);
-            
-            gameState.player.life = 20;
-            gameState.player.elixir = 0;
-            gameState.player.maxElixir = 0;
-            gameState.player.hand = [];
-            gameState.player.battlefield = [];
-            gameState.opponent.life = 20;
-            gameState.opponent.elixir = 0;
-            gameState.opponent.maxElixir = 0;
-            gameState.opponent.hand = [];
-            gameState.opponent.battlefield = [];
-            gameState.turn = 1;
-            gameState.currentPhase = 'quiz';
-            gameState.attackers = [];
-            gameState.gameStarted = true;
-            
-            for (let i = 0; i < 7; i++) {
-                drawCard('player');
-                drawCard('opponent');
-            }
-            
-            updateUI();
-            
-            if (gameState.mode === 'single' || (gameState.mode === 'multi' && gameState.isPlayer1)) {
-                showMessage("📝 Answer the question to earn elixir for your turn!");
-                showQuiz();
-            } else {
-                showMessage("⏳ Waiting for opponent to answer quiz...");
-                document.getElementById('playerPanel').classList.remove('active');
-                document.getElementById('opponentPanel').classList.add('active');
-            }
-        }
+    // === Event listeners ===
+    document.getElementById('quizBtn').addEventListener('click', openQuiz);
+    document.getElementById('closeQuizBtn').addEventListener('click', closeQuiz);
+    document.getElementById('resetBtn').addEventListener('click', resetGame);
+    document.getElementById('muteBtn').addEventListener('click', toggleMute);
 
-        function shuffleDeck(deck) {
-            const shuffled = [...deck];
-            for (let i = shuffled.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-            }
-            return shuffled.map((card, index) => ({
-                ...card,
-                id: `${card.name}_${index}_${Date.now()}`,
-                currentToughness: card.toughness || 0,
-                tapped: false
-            }));
-        }
+    document.getElementById('startBtn').addEventListener('click', () => {
+      document.getElementById('startOverlay').classList.add('hidden');
+      state.running = true;
+      resetGame();
+      playBattleMusic();
+    });
 
-        function drawCard(player) {
-            const playerState = gameState[player];
-            if (playerState.deck.length > 0) {
-                const card = playerState.deck.pop();
-                if (card.type === 'creature') {
-                    card.currentToughness = card.toughness;
-                }
-                card.tapped = false;
-                playerState.hand.push(card);
-            }
-        }
+    // Enemy elixir timer
+    setInterval(enemyAiTick, ENEMY_ELIXIR_INTERVAL_MS);
 
-        function showQuiz() {
-            const modal = document.getElementById('quizModal');
-            const questionEl = document.getElementById('quizQuestion');
-            const answersEl = document.getElementById('quizAnswers');
-            const resultEl = document.getElementById('quizResult');
-            
-            const question = quizQuestions[Math.floor(Math.random() * quizQuestions.length)];
-            
-            questionEl.textContent = question.question;
-            answersEl.innerHTML = '';
-            resultEl.textContent = '';
-            
-            question.answers.forEach((answer, index) => {
-                const btn = document.createElement('button');
-                btn.className = 'answer-btn';
-                btn.textContent = answer;
-                btn.onclick = () => answerQuestion(index, question.correct, btn);
-                answersEl.appendChild(btn);
-            });
-            
-            modal.classList.add('show');
-        }
-
-        function answerQuestion(selected, correct, btn) {
-            const answersEl = document.getElementById('quizAnswers');
-            const resultEl = document.getElementById('quizResult');
-            const allBtns = answersEl.querySelectorAll('.answer-btn');
-            
-            allBtns.forEach(b => b.style.pointerEvents = 'none');
-            
-            if (selected === correct) {
-                btn.classList.add('correct');
-                resultEl.textContent = '✅ CORRECT! +1 Max Elixir permanently!';
-                resultEl.style.color = '#00b894';
-                gameState.player.maxElixir = Math.min(10, gameState.player.maxElixir + 1);
-                gameState.player.elixir = gameState.player.maxElixir;
-            } else {
-                btn.classList.add('incorrect');
-                allBtns[correct].classList.add('correct');
-                resultEl.textContent = `❌ WRONG! No new elixir. You have ${gameState.player.maxElixir} max elixir.`;
-                resultEl.style.color = '#d63031';
-                gameState.player.elixir = gameState.player.maxElixir;
-            }
-            
-            updateUI();
-            
-            setTimeout(() => {
-                document.getElementById('quizModal').classList.remove('show');
-                startMainPhase();
-            }, 2500);
-        }
-
-        function startMainPhase() {
-            gameState.currentPhase = 'main1';
-            drawCard('player');
-            showMessage("⚔️ YOUR TURN! Play cards or start COMBAT!");
-            document.getElementById('playerPanel').classList.add('active');
-            document.getElementById('opponentPanel').classList.remove('active');
-            enableButtons();
-            updateUI();
-        }
-
-        function playCard(player, cardIndex) {
-            const playerState = gameState[player];
-            const card = playerState.hand[cardIndex];
-            
-            if (playerState.elixir >= card.cost) {
-                if (card.type === 'creature') {
-                    playerState.elixir -= card.cost;
-                    playerState.battlefield.push(card);
-                    playerState.hand.splice(cardIndex, 1);
-                    if (player === 'player') {
-                        showMessage(`✨ You played ${card.name}!`);
-                    }
-                    updateUI();
-                    return true;
-                } else {
-                    castSpell(player, card, cardIndex);
-                    return true;
-                }
-            } else {
-                if (player === 'player') {
-                    showMessage(`❌ Not enough elixir! Need ${card.cost}, have ${playerState.elixir}`);
-                }
-                return false;
-            }
-        }
-
-        function castSpell(player, spell, handIndex) {
-            const playerState = gameState[player];
-            
-            if (playerState.elixir < spell.cost) {
-                showMessage(`❌ Not enough elixir!`);
-                return;
-            }
-            
-            playerState.elixir -= spell.cost;
-            playerState.hand.splice(handIndex, 1);
-            
-            showMessage(`✨ ${spell.name} cast!`);
-            
-            setTimeout(() => {
-                executeSpellEffect(player, spell);
-            }, 500);
-        }
-
-        function executeSpellEffect(caster, spell) {
-            const opponent = caster === 'player' ? 'opponent' : 'player';
-            
-            switch(spell.name) {
-                case 'Zap':
-                    // Deal 2 damage and tap a creature
-                    if (gameState[opponent].battlefield.length > 0) {
-                        const target = gameState[opponent].battlefield[0];
-                        target.currentToughness -= 2;
-                        target.tapped = true;
-                        showMessage(`⚡ Zap deals 2 damage to ${target.name} and taps it!`);
-                        if (target.currentToughness <= 0) {
-                            gameState[opponent].battlefield = gameState[opponent].battlefield.filter(c => c.id !== target.id);
-                            showMessage(`💀 ${target.name} destroyed!`);
-                        }
-                    }
-                    break;
-                    
-                case 'Giant Snowball':
-                    // Deal 2 damage to 2 targets
-                    for (let i = 0; i < 2 && i < gameState[opponent].battlefield.length; i++) {
-                        const target = gameState[opponent].battlefield[i];
-                        target.currentToughness -= 2;
-                        showMessage(`❄️ Giant Snowball deals 2 damage to ${target.name}!`);
-                        if (target.currentToughness <= 0) {
-                            gameState[opponent].battlefield = gameState[opponent].battlefield.filter(c => c.id !== target.id);
-                            showMessage(`💀 ${target.name} destroyed!`);
-                        }
-                    }
-                    break;
-                    
-                case 'Arrows':
-                    // Destroy all creatures with 2 or less toughness
-                    const destroyed = [];
-                    gameState[opponent].battlefield = gameState[opponent].battlefield.filter(c => {
-                        if (c.type === 'creature' && c.currentToughness <= 2) {
-                            destroyed.push(c.name);
-                            return false;
-                        }
-                        return true;
-                    });
-                    if (destroyed.length > 0) {
-                        showMessage(`🏹 Arrows destroyed: ${destroyed.join(', ')}!`);
-                    } else {
-                        showMessage(`🏹 Arrows had no effect!`);
-                    }
-                    break;
-                    
-                case 'Heal':
-                    // Heal a creature +3
-                    if (gameState[caster].battlefield.length > 0) {
-                        const target = gameState[caster].battlefield[0];
-                        const oldToughness = target.currentToughness;
-                        target.currentToughness = Math.min(target.currentToughness + 3, target.toughness);
-                        const healed = target.currentToughness - oldToughness;
-                        showMessage(`💚 Heal restored ${healed} health to ${target.name}!`);
-                    }
-                    break;
-                    
-                case 'Earthquake':
-                    // Deal 3 damage to all creatures
-                    gameState[opponent].battlefield.forEach(c => {
-                        c.currentToughness -= 3;
-                    });
-                    gameState[opponent].battlefield = gameState[opponent].battlefield.filter(c => c.currentToughness > 0);
-                    gameState[caster].battlefield.forEach(c => {
-                        c.currentToughness -= 3;
-                    });
-                    gameState[caster].battlefield = gameState[caster].battlefield.filter(c => c.currentToughness > 0);
-                    showMessage(`🌍 Earthquake deals 3 damage to all creatures!`);
-                    break;
-                    
-                case 'Freeze':
-                    // Tap all opponent creatures
-                    gameState[opponent].battlefield.forEach(c => {
-                        if (c.type === 'creature') c.tapped = true;
-                    });
-                    showMessage(`❄️ Freeze taps all opponent creatures!`);
-                    break;
-                    
-                case 'Fireball':
-                    // Deal 4 damage to creature or player
-                    if (gameState[opponent].battlefield.length > 0) {
-                        const target = gameState[opponent].battlefield[0];
-                        target.currentToughness -= 4;
-                        showMessage(`🔥 Fireball deals 4 damage to ${target.name}!`);
-                        if (target.currentToughness <= 0) {
-                            gameState[opponent].battlefield = gameState[opponent].battlefield.filter(c => c.id !== target.id);
-                            showMessage(`💀 ${target.name} destroyed!`);
-                        }
-                    } else {
-                        gameState[opponent].life -= 4;
-                        showMessage(`🔥 Fireball deals 4 damage to opponent! (${gameState[opponent].life} life remaining)`);
-                    }
-                    break;
-                    
-                case 'Poison':
-                    // Deal 2 damage to all opponent creatures
-                    gameState[opponent].battlefield.forEach(c => {
-                        c.currentToughness -= 2;
-                    });
-                    gameState[opponent].battlefield = gameState[opponent].battlefield.filter(c => c.currentToughness > 0);
-                    showMessage(`☠️ Poison deals 2 damage to all opponent creatures!`);
-                    break;
-                    
-                case 'Lightning':
-                    // Deal 5 damage to up to 3 targets
-                    for (let i = 0; i < 3 && i < gameState[opponent].battlefield.length; i++) {
-                        const target = gameState[opponent].battlefield[i];
-                        target.currentToughness -= 5;
-                        showMessage(`⚡ Lightning deals 5 damage to ${target.name}!`);
-                        if (target.currentToughness <= 0) {
-                            gameState[opponent].battlefield = gameState[opponent].battlefield.filter(c => c.id !== target.id);
-                            showMessage(`💀 ${target.name} destroyed!`);
-                        }
-                    }
-                    break;
-                    
-                case 'Rocket':
-                    // Deal 7 damage to creature or player
-                    if (gameState[opponent].battlefield.length > 0) {
-                        const target = gameState[opponent].battlefield[0];
-                        target.currentToughness -= 7;
-                        showMessage(`🚀 Rocket deals 7 damage to ${target.name}!`);
-                        if (target.currentToughness <= 0) {
-                            gameState[opponent].battlefield = gameState[opponent].battlefield.filter(c => c.id !== target.id);
-                            showMessage(`💀 ${target.name} destroyed!`);
-                        }
-                    } else {
-                        gameState[opponent].life -= 7;
-                        showMessage(`🚀 Rocket deals 7 damage to opponent! (${gameState[opponent].life} life remaining)`);
-                    }
-                    break;
-                    
-                default:
-                    showMessage(`✨ ${spell.name} - Effect coming soon!`);
-            }
-            
-            checkGameOver();
-            updateUI();
-        }
-
-        function startCombat() {
-            if (gameState.player.battlefield.filter(c => c.type === 'creature').length === 0) {
-                showMessage("❌ No creatures to attack with!");
-                return;
-            }
-            
-            gameState.currentPhase = 'combat';
-            gameState.attackers = [];
-            showMessage("⚔️ SELECT ATTACKERS! Click creatures, then END TURN!");
-            updateUI();
-        }
-
-        function selectAttacker(cardId) {
-            const card = gameState.player.battlefield.find(c => c.id === cardId);
-            if (card && !card.tapped && card.type === 'creature') {
-                const index = gameState.attackers.indexOf(cardId);
-                if (index === -1) {
-                    gameState.attackers.push(cardId);
-                } else {
-                    gameState.attackers.splice(index, 1);
-                }
-                updateUI();
-            }
-        }
-
-        function resolveCombat() {
-            if (gameState.attackers.length === 0) {
-                gameState.currentPhase = 'main1'; // Change phase first!
-                endTurn();
-                return;
-            }
-            
-            triggerAttackEffect();
-            
-            // Get all available blockers
-            const availableBlockers = gameState.opponent.battlefield.filter(c => !c.tapped && c.type === 'creature');
-            let blockerIndex = 0;
-            
-            // Process each attacker
-            gameState.attackers.forEach((attackerId) => {
-                const attacker = gameState.player.battlefield.find(c => c.id === attackerId);
-                if (!attacker) return; // Attacker died somehow
-                
-                // Check if there's a blocker available
-                if (blockerIndex < availableBlockers.length) {
-                    const blocker = availableBlockers[blockerIndex];
-                    blockerIndex++;
-                    
-                    // Combat damage
-                    attacker.currentToughness -= blocker.power;
-                    blocker.currentToughness -= attacker.power;
-                    
-                    showMessage(`💥 ${attacker.name} (${attacker.power}/${attacker.currentToughness}) fights ${blocker.name} (${blocker.power}/${blocker.currentToughness})!`);
-                    
-                    // Remove dead creatures
-                    if (attacker.currentToughness <= 0) {
-                        gameState.player.battlefield = gameState.player.battlefield.filter(c => c.id !== attacker.id);
-                    }
-                    if (blocker.currentToughness <= 0) {
-                        gameState.opponent.battlefield = gameState.opponent.battlefield.filter(c => c.id !== blocker.id);
-                    }
-                } else {
-                    // Unblocked - damage goes to opponent!
-                    gameState.opponent.life -= attacker.power;
-                    showMessage(`⚔️ ${attacker.name} deals ${attacker.power} damage to opponent! (${gameState.opponent.life} life remaining)`);
-                }
-            });
-            
-            // Tap all attackers
-            gameState.attackers.forEach(attackerId => {
-                const card = gameState.player.battlefield.find(c => c.id === attackerId);
-                if (card) card.tapped = true;
-            });
-            
-            gameState.attackers = [];
-            gameState.currentPhase = 'main1'; // Change phase so endTurn doesn't loop back!
-            checkGameOver();
-            updateUI();
-            
-            setTimeout(() => {
-                endTurn();
-            }, 1500);
-        }
-
-        function endTurn() {
-            // If in combat phase, resolve combat first!
-            if (gameState.currentPhase === 'combat') {
-                resolveCombat();
-                return;
-            }
-            
-            // Otherwise, end turn normally
-            gameState.player.battlefield.forEach(card => card.tapped = false);
-            disableButtons();
-            document.getElementById('playerPanel').classList.remove('active');
-            document.getElementById('opponentPanel').classList.add('active');
-            setTimeout(() => {
-                opponentTurn();
-            }, 1000);
-        }
-
-        function opponentTurn() {
-            showMessage("🤖 OPPONENT'S TURN...");
-            gameState.turn++;
-            gameState.opponent.maxElixir = Math.min(10, gameState.opponent.maxElixir + 1);
-            gameState.opponent.elixir = gameState.opponent.maxElixir;
-            drawCard('opponent');
-            
-            setTimeout(() => {
-                let attempts = 0;
-                while (gameState.opponent.hand.length > 0 && attempts < 10) {
-                    let played = false;
-                    for (let i = 0; i < gameState.opponent.hand.length; i++) {
-                        if (gameState.opponent.hand[i].cost <= gameState.opponent.elixir) {
-                            playCard('opponent', i);
-                            played = true;
-                            attempts++;
-                            break;
-                        }
-                    }
-                    if (!played) break;
-                }
-                
-                updateUI();
-                setTimeout(() => {
-                    aiAttack();
-                }, 1500);
-            }, 1000);
-        }
-
-        function aiAttack() {
-            triggerAttackEffect();
-            
-            // Get all available blockers for player
-            const availableBlockers = gameState.player.battlefield.filter(c => !c.tapped && c.type === 'creature');
-            let blockerIndex = 0;
-            
-            // AI attacks with all untapped creatures
-            const attackers = gameState.opponent.battlefield.filter(card => !card.tapped && card.type === 'creature');
-            
-            attackers.forEach(attacker => {
-                // Check if there's a blocker available
-                if (blockerIndex < availableBlockers.length) {
-                    const blocker = availableBlockers[blockerIndex];
-                    blockerIndex++;
-                    
-                    // Combat damage
-                    attacker.currentToughness -= blocker.power;
-                    blocker.currentToughness -= attacker.power;
-                    blocker.tapped = true;
-                    
-                    showMessage(`💥 ${attacker.name} (${attacker.power}/${attacker.currentToughness}) fights ${blocker.name} (${blocker.power}/${blocker.currentToughness})!`);
-                    
-                    // Remove dead creatures
-                    if (attacker.currentToughness <= 0) {
-                        gameState.opponent.battlefield = gameState.opponent.battlefield.filter(c => c.id !== attacker.id);
-                    }
-                    if (blocker.currentToughness <= 0) {
-                        gameState.player.battlefield = gameState.player.battlefield.filter(c => c.id !== blocker.id);
-                    }
-                } else {
-                    // Unblocked - damage goes to player!
-                    gameState.player.life -= attacker.power;
-                    showMessage(`⚔️ ${attacker.name} deals ${attacker.power} damage to you! (${gameState.player.life} life remaining)`);
-                }
-                attacker.tapped = true;
-            });
-            
-            // Untap opponent's creatures at end of their turn
-            gameState.opponent.battlefield.forEach(card => card.tapped = false);
-            
-            checkGameOver();
-            updateUI();
-            
-            setTimeout(() => {
-                showQuiz();
-            }, 1500);
-        }
-
-        function checkGameOver() {
-            if (gameState.player.life <= 0) {
-                showGameOver("💀 DEFEAT 💀", "The opponent wins!");
-                if (gameState.mode === 'multi') {
-                    updateLeaderboard(gameState.playerId, gameState.playerName, false);
-                }
-                return true;
-            }
-            if (gameState.opponent.life <= 0) {
-                showGameOver("🏆 VICTORY 🏆", "You are the champion!");
-                if (gameState.mode === 'multi') {
-                    updateLeaderboard(gameState.playerId, gameState.playerName, true);
-                }
-                return true;
-            }
-            return false;
-        }
-
-        function showGameOver(title, message) {
-            document.getElementById('gameOverText').textContent = title;
-            document.getElementById('gameOverMessage').textContent = message;
-            document.getElementById('gameOver').classList.add('show');
-            disableButtons();
-        }
-
-        function showMessage(msg) {
-            document.getElementById('messageBox').textContent = msg;
-        }
-
-        function enableButtons() {
-            document.getElementById('attackPhaseBtn').disabled = false;
-            document.getElementById('endTurnBtn').disabled = false;
-        }
-
-        function disableButtons() {
-            document.getElementById('attackPhaseBtn').disabled = true;
-            document.getElementById('endTurnBtn').disabled = true;
-        }
-
-        function updateUI() {
-            document.getElementById('playerLife').textContent = gameState.player.life;
-            document.getElementById('playerElixir').textContent = `${gameState.player.elixir}/${gameState.player.maxElixir}`;
-            document.getElementById('playerHandSize').textContent = gameState.player.hand.length;
-            
-            document.getElementById('opponentLife').textContent = gameState.opponent.life;
-            document.getElementById('opponentElixir').textContent = `${gameState.opponent.elixir}/${gameState.opponent.maxElixir}`;
-            document.getElementById('opponentHandSize').textContent = gameState.opponent.hand.length;
-            
-            updateBattlefield('player');
-            updateBattlefield('opponent');
-            updateHand();
-        }
-
-        function updateBattlefield(player) {
-            const battlefieldDiv = document.getElementById(player === 'player' ? 'playerBattlefield' : 'opponentBattlefield');
-            battlefieldDiv.innerHTML = '';
-            
-            gameState[player].battlefield.forEach(card => {
-                const cardDiv = createCardElement(card, player, false);
-                if (card.tapped) cardDiv.classList.add('tapped');
-                if (gameState.attackers.includes(card.id)) cardDiv.classList.add('selected');
-                battlefieldDiv.appendChild(cardDiv);
-            });
-        }
-
-        function updateHand() {
-            const handDiv = document.getElementById('playerHand');
-            handDiv.innerHTML = '';
-            
-            gameState.player.hand.forEach((card, index) => {
-                const cardDiv = createCardElement(card, 'player', true, index);
-                handDiv.appendChild(cardDiv);
-            });
-        }
-
-        function createCardElement(card, owner, inHand = false, handIndex = null) {
-            const cardDiv = document.createElement('div');
-            cardDiv.className = 'card';
-            if (card.type !== 'creature') {
-                cardDiv.classList.add('spell');
-            }
-            
-            if (inHand && owner === 'player') {
-                cardDiv.onclick = () => playCard('player', handIndex);
-            } else if (!inHand && owner === 'player' && gameState.currentPhase === 'combat' && card.type === 'creature') {
-                cardDiv.onclick = () => selectAttacker(card.id);
-            }
-            
-            let cardContent = `<div class="cost-badge">${card.cost}</div>`;
-            // URL encode to handle spaces in filenames
-            const encodedImagePath = encodeURI(card.image);
-            cardContent += `<img src="${encodedImagePath}" alt="${card.name}" class="card-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'100\\' height=\\'100\\'%3E%3Crect fill=\\'%23333\\' width=\\'100\\' height=\\'100\\'/%3E%3Ctext x=\\'50%25\\' y=\\'50%25\\' text-anchor=\\'middle\\' dy=\\'.3em\\' fill=\\'white\\'%3E${card.name}%3C/text%3E%3C/svg%3E'">`;
-            cardContent += `<div class="card-name">${card.name}</div>`;
-            
-            if (card.type === 'creature') {
-                cardContent += `<div class="card-stats"><span>⚔️ ${card.power}</span><span>🛡️ ${card.currentToughness}</span></div>`;
-            } else {
-                cardContent += `<div class="card-type">${card.type === 'instant' ? '🔵 INSTANT' : '⭐ SORCERY'}</div>`;
-            }
-            
-            cardDiv.innerHTML = cardContent;
-            return cardDiv;
-        }
-    </script>
+    // Init
+    renderHands();
+    updateAllUi();
+    playLobbyMusic();
+    requestAnimationFrame(gameLoop);
+  </script>
 </body>
 </html>
