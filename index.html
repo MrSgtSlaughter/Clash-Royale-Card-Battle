@@ -1036,9 +1036,9 @@
     // Difficulty settings
     let currentDifficulty = 'easy';
     const difficultySettings = {
-      easy: { playerSpeed: 0.025, enemySpeed: 0.02, enemyTickChance: 0.3 },
-      medium: { playerSpeed: 0.06, enemySpeed: 0.05, enemyTickChance: 0.55 },
-      hard: { playerSpeed: 0.12, enemySpeed: 0.10, enemyTickChance: 0.8 }
+      easy: { playerSpeed: 0.025, enemySpeed: 0.02, enemyTickChance: 0.15, enemyMinElixir: 4 },
+      medium: { playerSpeed: 0.06, enemySpeed: 0.05, enemyTickChance: 0.45, enemyMinElixir: 3 },
+      hard: { playerSpeed: 0.12, enemySpeed: 0.10, enemyTickChance: 0.75, enemyMinElixir: 2 }
     };
     
     // Point weights for leaderboard
@@ -1053,6 +1053,7 @@
     let PLAYER_SPEED = difficultySettings.easy.playerSpeed;
     let ENEMY_SPEED = difficultySettings.easy.enemySpeed;
     let ENEMY_TICK_CHANCE = difficultySettings.easy.enemyTickChance;
+    let ENEMY_MIN_ELIXIR = difficultySettings.easy.enemyMinElixir;
     
     const COLLISION_DISTANCE = 0.08;
     const ENEMY_ELIXIR_INTERVAL_MS = 3000;
@@ -1148,29 +1149,62 @@
       { name: "Rocket",         cost: 6, damage: 7, heal: 0, image: "Rocket.png" }
     ];
 
-    // === Egypt / Pharaoh questions ===
-    const questions = [
-      { q: "What river was central to ancient Egyptian civilization?", choices: ["Tigris River", "Nile River", "Euphrates River", "Jordan River"], correct: 1 },
-      { q: "What were the Egyptian kings called?", choices: ["Emperors", "Pharaohs", "Kings", "Sultans"], correct: 1 },
-      { q: "What writing system did ancient Egyptians use?", choices: ["Cuneiform", "Hieroglyphics", "Alphabet", "Pictographs"], correct: 1 },
-      { q: "What did Egyptians build as tombs for their pharaohs?", choices: ["Temples", "Pyramids", "Ziggurats", "Castles"], correct: 1 },
-      { q: "What material did ancient Egyptians often write on?", choices: ["Papyrus", "Clay tablets", "Parchment", "Stone"], correct: 0 },
-      { q: "What process did Egyptians use to preserve bodies?", choices: ["Cremation", "Mummification", "Freezing", "Burning"], correct: 1 },
-      { q: "Which structure is one of the Seven Wonders of the Ancient World?", choices: ["Great Sphinx", "Great Pyramid of Giza", "Temple of Karnak", "Abu Simbel"], correct: 1 },
-      { q: "What was the Nile River delta region called?", choices: ["Upper Egypt", "Lower Egypt", "Middle Egypt", "Outer Egypt"], correct: 1 },
-      { q: "Who was a famous female pharaoh of Egypt?", choices: ["Nefertiti", "Hatshepsut", "Cleopatra", "Isis"], correct: 1 },
-      { q: "What did ancient Egyptians believe happened in the afterlife?", choices: ["There was no afterlife","Only pharaohs had afterlife","Souls were judged and could have eternal life","Everyone was punished"], correct: 2 },
-      { q: "Which god was considered king of the Egyptian gods?", choices: ["Osiris", "Anubis", "Ra", "Horus"], correct: 2 },
-      { q: "Which animal is linked to the god Anubis?", choices: ["Cat", "Jackal", "Falcon", "Crocodile"], correct: 1 },
-      { q: "Why was the Nile's yearly flood important?", choices: ["It destroyed farms","It left rich silt for farming","It scared invaders","It created islands"], correct: 1 },
-      { q: "Most ancient Egyptians were:", choices: ["Soldiers", "Priests", "Farmers", "Merchants"], correct: 2 },
-      { q: "Who deciphered hieroglyphics using the Rosetta Stone?", choices: ["Napoleon", "Champollion", "Carter", "Petrie"], correct: 1 },
-      { q: "Which pharaoh ordered the Great Pyramid at Giza?", choices: ["Tutankhamun", "Khufu", "Ramses II", "Akhenaten"], correct: 1 },
-      { q: "What was stored in canopic jars?", choices: ["Jewelry", "Organs", "Scrolls", "Sand"], correct: 1 },
-      { q: "What was the purpose of the Book of the Dead?", choices: ["A list of pharaohs","A map of the Nile","Spells to guide the dead in the afterlife","Egyptian laws"], correct: 2 },
-      { q: "Which boy pharaoh's tomb was found nearly intact in 1922?", choices: ["Ramses II", "Tutankhamun", "Khafre", "Djoser"], correct: 1 },
-      { q: "Which stone helped decode hieroglyphics?", choices: ["Obelisk Stone", "Pyramid Stone", "Rosetta Stone", "Sphinx Stone"], correct: 2 }
+    // === Egypt / Pharaoh questions (30 questions) ===
+    const questionsRaw = [
+      { q: "What river was central to ancient Egyptian civilization?", correct: "Nile River", wrong: ["Tigris River", "Euphrates River", "Jordan River"] },
+      { q: "What were the Egyptian kings called?", correct: "Pharaohs", wrong: ["Emperors", "Kings", "Sultans"] },
+      { q: "What writing system did ancient Egyptians use?", correct: "Hieroglyphics", wrong: ["Cuneiform", "Alphabet", "Pictographs"] },
+      { q: "What did Egyptians build as tombs for their pharaohs?", correct: "Pyramids", wrong: ["Temples", "Ziggurats", "Castles"] },
+      { q: "What material did ancient Egyptians often write on?", correct: "Papyrus", wrong: ["Clay tablets", "Parchment", "Stone slabs"] },
+      { q: "What process did Egyptians use to preserve bodies?", correct: "Mummification", wrong: ["Cremation", "Freezing", "Burial at sea"] },
+      { q: "Which structure is one of the Seven Wonders of the Ancient World?", correct: "Great Pyramid of Giza", wrong: ["Great Sphinx", "Temple of Karnak", "Abu Simbel"] },
+      { q: "What was the Nile River delta region called?", correct: "Lower Egypt", wrong: ["Upper Egypt", "Middle Egypt", "Outer Egypt"] },
+      { q: "Who was a famous female pharaoh of Egypt?", correct: "Hatshepsut", wrong: ["Nefertiti", "Isis", "Bastet"] },
+      { q: "What did ancient Egyptians believe happened in the afterlife?", correct: "Souls were judged and could have eternal life", wrong: ["There was no afterlife", "Only pharaohs had afterlife", "Everyone was punished"] },
+      { q: "Which god was considered king of the Egyptian gods?", correct: "Ra", wrong: ["Osiris", "Anubis", "Horus"] },
+      { q: "Which animal is linked to the god Anubis?", correct: "Jackal", wrong: ["Cat", "Falcon", "Crocodile"] },
+      { q: "Why was the Nile's yearly flood important?", correct: "It left rich silt for farming", wrong: ["It destroyed farms", "It scared invaders", "It created islands"] },
+      { q: "Most ancient Egyptians were:", correct: "Farmers", wrong: ["Soldiers", "Priests", "Merchants"] },
+      { q: "Who deciphered hieroglyphics using the Rosetta Stone?", correct: "Champollion", wrong: ["Napoleon", "Carter", "Petrie"] },
+      { q: "Which pharaoh ordered the Great Pyramid at Giza?", correct: "Khufu", wrong: ["Tutankhamun", "Ramses II", "Akhenaten"] },
+      { q: "What was stored in canopic jars?", correct: "Organs", wrong: ["Jewelry", "Scrolls", "Sand"] },
+      { q: "What was the purpose of the Book of the Dead?", correct: "Spells to guide the dead in the afterlife", wrong: ["A list of pharaohs", "A map of the Nile", "Egyptian laws"] },
+      { q: "Which boy pharaoh's tomb was found nearly intact in 1922?", correct: "Tutankhamun", wrong: ["Ramses II", "Khafre", "Djoser"] },
+      { q: "Which stone helped decode hieroglyphics?", correct: "Rosetta Stone", wrong: ["Obelisk Stone", "Pyramid Stone", "Sphinx Stone"] },
+      { q: "Which pharaoh is often associated with the biblical story of Moses?", correct: "Ramses II", wrong: ["Khufu", "Tutankhamun", "Akhenaten"] },
+      { q: "According to the Bible, how many plagues did God send upon Egypt?", correct: "Ten", wrong: ["Seven", "Twelve", "Five"] },
+      { q: "What was the first plague sent upon Egypt in the Bible?", correct: "Water turned to blood", wrong: ["Frogs", "Locusts", "Darkness"] },
+      { q: "Which plague involved insects that bit people and animals?", correct: "Gnats/Lice", wrong: ["Locusts", "Flies", "Frogs"] },
+      { q: "What was the final and most devastating plague?", correct: "Death of the firstborn", wrong: ["Darkness", "Locusts", "Boils"] },
+      { q: "What event do Jewish people celebrate to remember the Exodus from Egypt?", correct: "Passover", wrong: ["Hanukkah", "Yom Kippur", "Rosh Hashanah"] },
+      { q: "What body of water did Moses part to escape Egypt?", correct: "Red Sea", wrong: ["Mediterranean Sea", "Nile River", "Dead Sea"] },
+      { q: "Who was Moses's brother who helped him speak to Pharaoh?", correct: "Aaron", wrong: ["Joshua", "Abraham", "Joseph"] },
+      { q: "Which goddess was believed to protect pharaohs and appeared as a cobra?", correct: "Wadjet", wrong: ["Isis", "Hathor", "Bastet"] },
+      { q: "What massive statue with a lion's body and human head guards the Giza pyramids?", correct: "The Great Sphinx", wrong: ["The Colossus", "The Obelisk", "The Mummy"] }
     ];
+    
+    // Function to shuffle an array
+    function shuffleArray(array) {
+      const shuffled = [...array];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      return shuffled;
+    }
+    
+    // Function to get a randomized question
+    function getRandomQuestion() {
+      const raw = questionsRaw[Math.floor(Math.random() * questionsRaw.length)];
+      const allChoices = [raw.correct, ...raw.wrong];
+      const shuffledChoices = shuffleArray(allChoices);
+      const correctIndex = shuffledChoices.indexOf(raw.correct);
+      return {
+        q: raw.q,
+        choices: shuffledChoices,
+        correct: correctIndex
+      };
+    }
 
     // Logging
     function log(msg) {
@@ -1641,7 +1675,7 @@
 
       state.enemyElixir += ENEMY_ELIXIR_PER_TICK;
 
-      if (state.enemyElixir < 2) return;
+      if (state.enemyElixir < ENEMY_MIN_ELIXIR) return;
       if (Math.random() > ENEMY_TICK_CHANCE) return;
 
       const allOptions = monsterCards.concat(spellCards);
@@ -1760,7 +1794,7 @@
       quizResultEl.textContent = '';
       quizAnswersEl.innerHTML = '';
 
-      const question = questions[Math.floor(Math.random() * questions.length)];
+      const question = getRandomQuestion();
       quizQuestionEl.textContent = question.q;
 
       question.choices.forEach((choiceText, index) => {
@@ -1909,6 +1943,7 @@
       PLAYER_SPEED = settings.playerSpeed;
       ENEMY_SPEED = settings.enemySpeed;
       ENEMY_TICK_CHANCE = settings.enemyTickChance;
+      ENEMY_MIN_ELIXIR = settings.enemyMinElixir;
       
       easyBtn.classList.toggle('active', diff === 'easy');
       mediumBtn.classList.toggle('active', diff === 'medium');
