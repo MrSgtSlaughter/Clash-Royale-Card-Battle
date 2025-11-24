@@ -1854,11 +1854,10 @@
       } else {
         btnEl.classList.add('incorrect');
         buttons[question.correct].classList.add('correct');
-        quizResultEl.textContent = '❌ Incorrect. -1 elixir (cannot go below 0).';
+        quizResultEl.textContent = '❌ Incorrect. Try again!';
         quizResultEl.style.color = '#e74c3c';
-        state.playerElixir = Math.max(0, state.playerElixir - 1);
-        log(`❌ Incorrect: your elixir is now ${state.playerElixir}.`);
-        updateStatus('Tough one. Answer again to rebuild elixir.');
+        log(`❌ Incorrect. The correct answer was shown.`);
+        updateStatus('Keep trying! Answer more questions to gain elixir.');
       }
 
       updateAllUi();
