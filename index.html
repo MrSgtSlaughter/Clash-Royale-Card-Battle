@@ -1566,16 +1566,25 @@
 
       roomRef.child('players').once('value').then(snap => {
         const players = snap.val() || {};
-        if (!players.player1) {
+        
+        // Check if we can rejoin with our existing slot
+        if (players.player1 && players.player1.name === multiplayer.playerName) {
           multiplayer.playerId = 'player1';
-          roomRef.child('players/player1').set({ name: multiplayer.playerName });
+        } else if (players.player2 && players.player2.name === multiplayer.playerName) {
+          multiplayer.playerId = 'player2';
+        } else if (!players.player1) {
+          multiplayer.playerId = 'player1';
         } else if (!players.player2) {
           multiplayer.playerId = 'player2';
-          roomRef.child('players/player2').set({ name: multiplayer.playerName });
         } else {
-          alert('Room is already full.');
+          alert('Room is already full with 2 different players. Try another room name.');
           return;
         }
+        
+        // Set up presence detection - remove player slot when they disconnect
+        const playerRef = roomRef.child('players/' + multiplayer.playerId);
+        playerRef.set({ name: multiplayer.playerName });
+        playerRef.onDisconnect().remove();
 
         roomRef.child('players').on('value', s => {
           const p = s.val() || {};
