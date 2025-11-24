@@ -1076,6 +1076,7 @@
     let firebaseInitialized = false;
     let db = null;
     let roomRef = null;
+    let gameStartTime = 0; // Track when multiplayer game starts
     const multiplayer = {
       enabled: false,
       playerName: '',
@@ -1116,7 +1117,7 @@
 
     // === Card data ===
     const monsterCards = [
-      { name: "Skeletons",    cost: 1, damage: 2, hp: 2, image: "Skeletons.png" },
+      { name: "Skeletons",    cost: 1, damage: 2, hp: 1, image: "Skeletons.png" },
       { name: "Fire Spirit",  cost: 2, damage: 3, hp: 2, image: "Fire Spirit.png" },
       { name: "Goblins",      cost: 2, damage: 3, hp: 3, image: "Goblins.png" },
       { name: "Bomber",       cost: 3, damage: 4, hp: 3, image: "Bomber.png" },
@@ -1149,38 +1150,38 @@
       { name: "Rocket",         cost: 6, damage: 7, heal: 0, image: "Rocket.png" }
     ];
 
-    // === Egypt / Pharaoh questions (30 questions) ===
+    // === Egypt / Pharaoh questions (30 questions from textbook) ===
     const questionsRaw = [
-      { q: "What river was central to ancient Egyptian civilization?", correct: "Nile River", wrong: ["Tigris River", "Euphrates River", "Jordan River"] },
-      { q: "What were the Egyptian kings called?", correct: "Pharaohs", wrong: ["Emperors", "Kings", "Sultans"] },
-      { q: "What writing system did ancient Egyptians use?", correct: "Hieroglyphics", wrong: ["Cuneiform", "Alphabet", "Pictographs"] },
-      { q: "What did Egyptians build as tombs for their pharaohs?", correct: "Pyramids", wrong: ["Temples", "Ziggurats", "Castles"] },
-      { q: "What material did ancient Egyptians often write on?", correct: "Papyrus", wrong: ["Clay tablets", "Parchment", "Stone slabs"] },
-      { q: "What process did Egyptians use to preserve bodies?", correct: "Mummification", wrong: ["Cremation", "Freezing", "Burial at sea"] },
-      { q: "Which structure is one of the Seven Wonders of the Ancient World?", correct: "Great Pyramid of Giza", wrong: ["Great Sphinx", "Temple of Karnak", "Abu Simbel"] },
-      { q: "What was the Nile River delta region called?", correct: "Lower Egypt", wrong: ["Upper Egypt", "Middle Egypt", "Outer Egypt"] },
-      { q: "Who was a famous female pharaoh of Egypt?", correct: "Hatshepsut", wrong: ["Nefertiti", "Isis", "Bastet"] },
-      { q: "What did ancient Egyptians believe happened in the afterlife?", correct: "Souls were judged and could have eternal life", wrong: ["There was no afterlife", "Only pharaohs had afterlife", "Everyone was punished"] },
-      { q: "Which god was considered king of the Egyptian gods?", correct: "Ra", wrong: ["Osiris", "Anubis", "Horus"] },
-      { q: "Which animal is linked to the god Anubis?", correct: "Jackal", wrong: ["Cat", "Falcon", "Crocodile"] },
-      { q: "Why was the Nile's yearly flood important?", correct: "It left rich silt for farming", wrong: ["It destroyed farms", "It scared invaders", "It created islands"] },
-      { q: "Most ancient Egyptians were:", correct: "Farmers", wrong: ["Soldiers", "Priests", "Merchants"] },
-      { q: "Who deciphered hieroglyphics using the Rosetta Stone?", correct: "Champollion", wrong: ["Napoleon", "Carter", "Petrie"] },
-      { q: "Which pharaoh ordered the Great Pyramid at Giza?", correct: "Khufu", wrong: ["Tutankhamun", "Ramses II", "Akhenaten"] },
-      { q: "What was stored in canopic jars?", correct: "Organs", wrong: ["Jewelry", "Scrolls", "Sand"] },
-      { q: "What was the purpose of the Book of the Dead?", correct: "Spells to guide the dead in the afterlife", wrong: ["A list of pharaohs", "A map of the Nile", "Egyptian laws"] },
-      { q: "Which boy pharaoh's tomb was found nearly intact in 1922?", correct: "Tutankhamun", wrong: ["Ramses II", "Khafre", "Djoser"] },
-      { q: "Which stone helped decode hieroglyphics?", correct: "Rosetta Stone", wrong: ["Obelisk Stone", "Pyramid Stone", "Sphinx Stone"] },
-      { q: "Which pharaoh is often associated with the biblical story of Moses?", correct: "Ramses II", wrong: ["Khufu", "Tutankhamun", "Akhenaten"] },
-      { q: "According to the Bible, how many plagues did God send upon Egypt?", correct: "Ten", wrong: ["Seven", "Twelve", "Five"] },
-      { q: "What was the first plague sent upon Egypt in the Bible?", correct: "Water turned to blood", wrong: ["Frogs", "Locusts", "Darkness"] },
-      { q: "Which plague involved insects that bit people and animals?", correct: "Gnats/Lice", wrong: ["Locusts", "Flies", "Frogs"] },
-      { q: "What was the final and most devastating plague?", correct: "Death of the firstborn", wrong: ["Darkness", "Locusts", "Boils"] },
-      { q: "What event do Jewish people celebrate to remember the Exodus from Egypt?", correct: "Passover", wrong: ["Hanukkah", "Yom Kippur", "Rosh Hashanah"] },
-      { q: "What body of water did Moses part to escape Egypt?", correct: "Red Sea", wrong: ["Mediterranean Sea", "Nile River", "Dead Sea"] },
-      { q: "Who was Moses's brother who helped him speak to Pharaoh?", correct: "Aaron", wrong: ["Joshua", "Abraham", "Joseph"] },
-      { q: "Which goddess was believed to protect pharaohs and appeared as a cobra?", correct: "Wadjet", wrong: ["Isis", "Hathor", "Bastet"] },
-      { q: "What massive statue with a lion's body and human head guards the Giza pyramids?", correct: "The Great Sphinx", wrong: ["The Colossus", "The Obelisk", "The Mummy"] }
+      { q: "What is the world's longest river that flows through Egypt?", correct: "Nile River", wrong: ["Tigris River", "Euphrates River", "Amazon River"] },
+      { q: "What are the rocky rapids in the Nile called?", correct: "Cataracts", wrong: ["Cascades", "Waterfalls", "Rapids"] },
+      { q: "What area of sediment deposited at the mouth of the Nile is called?", correct: "Delta", wrong: ["Basin", "Valley", "Canyon"] },
+      { q: "What did Egyptians call their country, meaning 'the Black Land'?", correct: "Kemet", wrong: ["Kush", "Nubia", "Memphis"] },
+      { q: "Which part of Egypt is upstream from the Mediterranean Sea?", correct: "Upper Egypt", wrong: ["Lower Egypt", "Middle Egypt", "Outer Egypt"] },
+      { q: "What did Egyptians call the deserts on either side of the Nile?", correct: "The Red Land", wrong: ["The Yellow Land", "The White Land", "The Dead Land"] },
+      { q: "What allowed Egyptian farmers to grow more crops?", correct: "Irrigation", wrong: ["Rain", "Wells", "Underground rivers"] },
+      { q: "What are skilled workers who practice a handicraft called?", correct: "Artisans", wrong: ["Merchants", "Laborers", "Scribes"] },
+      { q: "Who was the legendary first pharaoh who united Upper and Lower Egypt?", correct: "Narmer", wrong: ["Khufu", "Ramses", "Tutankhamun"] },
+      { q: "What is a ruling family called?", correct: "Dynasty", wrong: ["Kingdom", "Empire", "Monarchy"] },
+      { q: "What is a system of offices and officials that handle government business?", correct: "Bureaucracy", wrong: ["Democracy", "Oligarchy", "Theocracy"] },
+      { q: "What was the head of Egypt's bureaucracy called?", correct: "Vizier", wrong: ["Scribe", "Priest", "General"] },
+      { q: "Which period of Egyptian history lasted from 2686 to 2125 BCE?", correct: "Old Kingdom", wrong: ["Middle Kingdom", "New Kingdom", "Late Period"] },
+      { q: "Which period saw pharaohs build canals to control Nile floods?", correct: "Middle Kingdom", wrong: ["Old Kingdom", "New Kingdom", "Early Dynasty"] },
+      { q: "Which period was the high point of ancient Egyptian power?", correct: "New Kingdom", wrong: ["Old Kingdom", "Middle Kingdom", "Late Period"] },
+      { q: "Who was the famous boy pharaoh whose tomb was found in 1922?", correct: "Tutankhamun", wrong: ["Ramses II", "Khufu", "Thutmose III"] },
+      { q: "What is the Egyptian sun god called?", correct: "Amon-Re", wrong: ["Osiris", "Horus", "Seth"] },
+      { q: "Who is the Egyptian god of the underworld?", correct: "Osiris", wrong: ["Amon-Re", "Anubis", "Horus"] },
+      { q: "Who is the mother goddess of Egypt?", correct: "Isis", wrong: ["Hathor", "Bastet", "Wadjet"] },
+      { q: "Which god had a jackal head and prepared bodies for the afterlife?", correct: "Anubis", wrong: ["Horus", "Seth", "Thoth"] },
+      { q: "What is a preserved body called?", correct: "Mummy", wrong: ["Corpse", "Skeleton", "Remains"] },
+      { q: "Who was the rare female pharaoh who ruled for over 20 years?", correct: "Hatshepsut", wrong: ["Cleopatra", "Nefertiti", "Isis"] },
+      { q: "Which pharaoh conquered lands in Africa and the Fertile Crescent?", correct: "Thutmose III", wrong: ["Khufu", "Narmer", "Tutankhamun"] },
+      { q: "Which pharaoh fought the Hittites at the Battle of Kadesh?", correct: "Ramses II", wrong: ["Thutmose III", "Hatshepsut", "Khufu"] },
+      { q: "What is Egyptian picture writing called?", correct: "Hieroglyphics", wrong: ["Cuneiform", "Alphabet", "Pictographs"] },
+      { q: "What paper-like material did Egyptians invent from reeds?", correct: "Papyrus", wrong: ["Parchment", "Paper", "Vellum"] },
+      { q: "What structure with triangular sides did Egyptians build as tombs?", correct: "Pyramid", wrong: ["Ziggurat", "Temple", "Obelisk"] },
+      { q: "Who designed the first step pyramid for a pharaoh?", correct: "Imhotep", wrong: ["Khufu", "Narmer", "Ramses"] },
+      { q: "Which pharaoh built the Great Pyramid at Giza?", correct: "Khufu", wrong: ["Ramses II", "Tutankhamun", "Hatshepsut"] },
+      { q: "What is the study of the structure of the body and organs called?", correct: "Anatomy", wrong: ["Biology", "Physiology", "Chemistry"] }
     ];
     
     // Function to shuffle an array
@@ -1521,6 +1522,10 @@
 
     function handleRemoteEvent(ev) {
       if (!ev || ev.from === multiplayer.playerId) return;
+      
+      // Ignore events from before the game started (prevents ghost cards from old games)
+      if (ev.ts && ev.ts < gameStartTime) return;
+      
       const cardName = ev.cardName;
       if (!cardName) return;
 
@@ -1564,37 +1569,41 @@
 
       roomRef = db.ref('rooms/' + multiplayer.roomName);
 
+      // Clear old room data to prevent ghost cards
+      roomRef.child('events').remove();
+
       roomRef.child('players').once('value').then(snap => {
         const players = snap.val() || {};
-        
-        // Check if we can rejoin with our existing slot
-        if (players.player1 && players.player1.name === multiplayer.playerName) {
+        if (!players.player1) {
           multiplayer.playerId = 'player1';
-        } else if (players.player2 && players.player2.name === multiplayer.playerName) {
-          multiplayer.playerId = 'player2';
-        } else if (!players.player1) {
-          multiplayer.playerId = 'player1';
+          roomRef.child('players/player1').set({ name: multiplayer.playerName, hp: MAX_HP });
         } else if (!players.player2) {
           multiplayer.playerId = 'player2';
+          roomRef.child('players/player2').set({ name: multiplayer.playerName, hp: MAX_HP });
         } else {
-          alert('Room is already full with 2 different players. Try another room name.');
+          alert('Room is already full.');
           return;
         }
-        
-        // Set up presence detection - remove player slot when they disconnect
-        const playerRef = roomRef.child('players/' + multiplayer.playerId);
-        playerRef.set({ name: multiplayer.playerName });
-        playerRef.onDisconnect().remove();
 
         roomRef.child('players').on('value', s => {
           const p = s.val() || {};
           const count = (p.player1 ? 1 : 0) + (p.player2 ? 1 : 0);
           if (count >= 2 && !state.running && !state.gameOver) {
             state.running = true;
+            gameStartTime = Date.now(); // Set start time to filter old events
             resetGame();
+            
+            // Sync HP from Firebase to ensure both players start with same HP
+            if (multiplayer.playerId === 'player1' && p.player2) {
+              state.enemyHp = p.player2.hp || MAX_HP;
+            } else if (multiplayer.playerId === 'player2' && p.player1) {
+              state.enemyHp = p.player1.hp || MAX_HP;
+            }
+            
             document.getElementById('startOverlay').classList.add('hidden');
             playBattleMusic();
             updateStatus('Multiplayer: battle started in room "' + multiplayer.roomName + '".');
+            updateAllUi();
           } else if (count < 2 && !state.running) {
             updateStatus('Waiting for opponent to join room "' + multiplayer.roomName + '"...');
           }
